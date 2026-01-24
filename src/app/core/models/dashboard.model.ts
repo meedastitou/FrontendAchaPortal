@@ -51,3 +51,23 @@ export interface AlertItem {
   date: string;
   lien: string;
 }
+
+export interface ReponseDetailItem {
+  code_article: string;
+  designation: string | null;
+  prix_unitaire_ht: number | null;
+  quantite_demandee: number | null;
+  devise: string;
+}
+
+export interface RecentReponse {
+  id: number;
+  numero_rfq: string;
+  code_fournisseur: string;
+  nom_fournisseur: string;
+  date_reponse: string;
+  nb_articles: number;
+  montant_total_ht: number | null;
+  devise: string;
+  articles: ReponseDetailItem[];
+}

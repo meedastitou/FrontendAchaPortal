@@ -8,7 +8,8 @@ import {
   RFQStatusChart,
   RecentActivity,
   TopFournisseur,
-  AlertItem
+  AlertItem,
+  RecentReponse
 } from '../models';
 
 @Injectable({
@@ -48,6 +49,13 @@ export class DashboardService {
   getAlerts(limit: number = 10): Observable<{ alerts: AlertItem[]; total: number }> {
     return this.http.get<{ alerts: AlertItem[]; total: number }>(
       `${this.API_URL}/alerts`,
+      { params: { limit: limit.toString() } }
+    );
+  }
+
+  getRecentReponses(limit: number = 10): Observable<{ reponses: RecentReponse[]; total: number }> {
+    return this.http.get<{ reponses: RecentReponse[]; total: number }>(
+      `${this.API_URL}/recent-reponses`,
       { params: { limit: limit.toString() } }
     );
   }

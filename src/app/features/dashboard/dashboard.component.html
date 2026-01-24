@@ -1,0 +1,333 @@
+<div class="dashboard">
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon blue">
+        <span>DA</span>
+      </div>
+      <div class="stat-content">
+        <span class="stat-value">{{ stats()?.total_da_actives || 0 }}</span>
+        <span class="stat-label">DA Actives</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon orange">
+        <span>RFQ</span>
+      </div>
+      <div class="stat-content">
+        <span class="stat-value">{{ stats()?.rfq_en_attente || 0 }}</span>
+        <span class="stat-label">RFQ en attente</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon green">
+        <span>OK</span>
+      </div>
+      <div class="stat-content">
+        <span class="stat-value">{{ stats()?.rfq_repondues || 0 }}</span>
+        <span class="stat-label">RFQ Repondues</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon purple">
+        <span>F</span>
+      </div>
+      <div class="stat-content">
+        <span class="stat-value">{{ stats()?.fournisseurs_actifs || 0 }}</span>
+        <span class="stat-label">Fournisseurs actifs</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon red">
+        <span>BL</span>
+      </div>
+      <div class="stat-content">
+        <span class="stat-value">{{ stats()?.fournisseurs_blacklistes || 0 }}</span>
+        <span class="stat-label">Blacklistes</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon teal">
+        <span>%</span>
+      </div>
+      <div class="stat-content">
+        <span class="stat-value">{{ stats()?.taux_reponse_moyen || 0 }}%</span>
+        <span class="stat-label">Taux reponse moyen</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- RFQ Status Chart -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Repartition des RFQ</h3>
+      </div>
+      <div class="card-body">
+        @if (rfqStatus()) {
+          <div class="status-chart">
+            <div class="status-item">
+              <div class="status-bar">
+                <div class="status-fill envoye" [style.width.%]="getStatusPercent('envoye')"></div>
+              </div>
+              <span class="status-label">Envoyees</span>
+              <span class="status-value">{{ rfqStatus()?.envoye || 0 }}</span>
+            </div>
+            <div class="status-item">
+              <div class="status-bar">
+                <div class="status-fill repondu" [style.width.%]="getStatusPercent('repondu')"></div>
+              </div>
+              <span class="status-label">Repondues</span>
+              <span class="status-value">{{ rfqStatus()?.repondu || 0 }}</span>
+            </div>
+            <div class="status-item">
+              <div class="status-bar">
+                <div class="status-fill rejete" [style.width.%]="getStatusPercent('rejete')"></div>
+              </div>
+              <span class="status-label">Rejetees</span>
+              <span class="status-value">{{ rfqStatus()?.rejete || 0 }}</span>
+            </div>
+            <div class="status-item">
+              <div class="status-bar">
+                <div class="status-fill relance" [style.width.%]="getStatusPercent('relance')"></div>
+              </div>
+              <span class="status-label">En relance</span>
+              <span class="status-value">{{ getTotalRelances() }}</span>
+            </div>
+          </div>
+        } @else {
+          <div class="loading">Chargement...</div>
+        }
+      </div>
+    </div>
+
+    <!-- Top Fournisseurs -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Top Fournisseurs</h3>
+        <a routerLink="/fournisseurs" class="view-all">Voir tout</a>
+      </div>
+      <div class="card-body">
+        @if (topFournisseurs().length > 0) {
+          <div class="top-list">
+            @for (f of topFournisseurs(); track f.code_fournisseur) {
+              <div class="top-item">
+                <div class="top-rank">{{ $index + 1 }}</div>
+                <div class="top-info">
+                  <span class="top-name">{{ f.nom_fournisseur }}</span>
+                  <span class="top-code">{{ f.code_fournisseur }}</span>
+                </div>
+                <div class="top-stats">
+                  <span class="top-rate">{{ f.taux_reponse }}%</span>
+                  <div class="stars">
+                    @for (star of getStars(f.note_performance); track $index) {
+                      <span class="star" [class.filled]="star">*</span>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty">Aucun fournisseur</div>
+        }
+      </div>
+    </div>
+
+    <!-- Activite Recente -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Activite Recente</h3>
+      </div>
+      <div class="card-body">
+        @if (activities().length > 0) {
+          <div class="activity-list">
+            @for (activity of activities(); track activity.id) {
+              <div class="activity-item">
+                <div class="activity-icon" [class]="activity.type">
+                  {{ activity.type === 'rfq_envoyee' ? 'E' : 'R' }}
+                </div>
+                <div class="activity-content">
+                  <span class="activity-desc">{{ activity.description }}</span>
+                  <span class="activity-date">{{ formatDate(activity.date) }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty">Aucune activite recente</div>
+        }
+      </div>
+    </div>
+
+    <!-- Alertes -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Alertes</h3>
+        <span class="alert-badge" [class.has-alerts]="alerts().length > 0">
+          {{ alerts().length }}
+        </span>
+      </div>
+      <div class="card-body">
+        @if (alerts().length > 0) {
+          <div class="alert-list">
+            @for (alert of alerts(); track alert.id) {
+              <a [routerLink]="alert.lien" class="alert-item" [class]="alert.type">
+                <div class="alert-icon">{{ alert.type === 'warning' ? '!' : 'i' }}</div>
+                <div class="alert-content">
+                  <span class="alert-title">{{ alert.titre }}</span>
+                  <span class="alert-message">{{ alert.message }}</span>
+                </div>
+              </a>
+            }
+          </div>
+        } @else {
+          <div class="empty success">Aucune alerte</div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Section Dernieres Reponses Fournisseurs -->
+  <div class="card reponses-card">
+    <div class="card-header">
+      <h3>Dernieres Reponses Fournisseurs</h3>
+      <a routerLink="/reponses" class="view-all">Voir tout</a>
+    </div>
+    <div class="card-body">
+      @if (recentReponses().length > 0) {
+        <div class="reponses-table">
+          <table>
+            <thead>
+              <tr>
+                <th>N RFQ</th>
+                <th>Fournisseur</th>
+                <th>Date</th>
+                <th>Articles</th>
+                <th>Montant HT</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (reponse of recentReponses(); track reponse.id) {
+                <tr>
+                  <td class="rfq-num">{{ reponse.numero_rfq }}</td>
+                  <td>
+                    <div class="fournisseur-info">
+                      <span class="fournisseur-name">{{ reponse.nom_fournisseur }}</span>
+                      <span class="fournisseur-code">{{ reponse.code_fournisseur }}</span>
+                    </div>
+                  </td>
+                  <td>{{ formatDate(reponse.date_reponse) }}</td>
+                  <td>
+                    <span class="articles-badge">{{ reponse.nb_articles }}</span>
+                  </td>
+                  <td class="montant">
+                    @if (reponse.montant_total_ht) {
+                      {{ formatMontant(reponse.montant_total_ht) }} {{ reponse.devise }}
+                    } @else {
+                      -
+                    }
+                  </td>
+                  <td>
+                    <button class="btn-details" (click)="showReponseDetails(reponse)">
+                      Voir details
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="empty">Aucune reponse recue</div>
+      }
+    </div>
+  </div>
+
+  <!-- Modal Details Reponse -->
+  @if (selectedReponse()) {
+    <div class="modal-overlay" (click)="closeReponseDetails()">
+      <div class="modal reponse-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">
+            <h3>Details de la reponse</h3>
+            <span class="rfq-badge">{{ selectedReponse()!.numero_rfq }}</span>
+          </div>
+          <button class="close-btn" (click)="closeReponseDetails()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="reponse-info">
+            <div class="info-row">
+              <span class="info-label">Fournisseur:</span>
+              <span class="info-value">{{ selectedReponse()!.nom_fournisseur }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Code:</span>
+              <span class="info-value">{{ selectedReponse()!.code_fournisseur }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Date reponse:</span>
+              <span class="info-value">{{ selectedReponse()!.date_reponse | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <div class="info-row highlight">
+              <span class="info-label">Montant total HT:</span>
+              <span class="info-value montant-total">
+                {{ formatMontant(selectedReponse()!.montant_total_ht) }} {{ selectedReponse()!.devise }}
+              </span>
+            </div>
+          </div>
+
+          <h4>Articles ({{ selectedReponse()!.articles.length }})</h4>
+          <div class="articles-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Code Article</th>
+                  <th>Designation</th>
+                  <th>Qte</th>
+                  <th>Prix Unit. HT</th>
+                  <th>Total HT</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (article of selectedReponse()!.articles; track article.code_article) {
+                  <tr>
+                    <td class="code-article">{{ article.code_article }}</td>
+                    <td>{{ article.designation || '-' }}</td>
+                    <td>{{ article.quantite_demandee || '-' }}</td>
+                    <td>
+                      @if (article.prix_unitaire_ht) {
+                        {{ formatMontant(article.prix_unitaire_ht) }} {{ article.devise }}
+                      } @else {
+                        -
+                      }
+                    </td>
+                    <td class="total-ligne">
+                      @if (article.prix_unitaire_ht && article.quantite_demandee) {
+                        {{ formatMontant(article.prix_unitaire_ht * article.quantite_demandee) }} {{ article.devise }}
+                      } @else {
+                        -
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <a [routerLink]="['/reponses', selectedReponse()!.id]" class="btn btn-primary">
+            Voir la reponse complete
+          </a>
+          <button class="btn btn-secondary" (click)="closeReponseDetails()">Fermer</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

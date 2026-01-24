@@ -4,6 +4,7 @@ export interface ReponseEntete {
   reference_fournisseur: string | null;
   fichier_devis_url: string | null;
   devise: string;
+  methodes_paiement: string | null;
   date_reponse: string;
   commentaire: string | null;
   created_at: string;
@@ -22,6 +23,10 @@ export interface ReponseDetail {
   marque_proposee: string | null;
   fichier_joint_url: string | null;
   commentaire_article: string | null;
+  // Champs depuis lignes_cotation
+  designation_article: string | null;
+  marque_demandee: string | null;
+  numero_da: string | null;
 }
 
 export interface ReponseComplete {
@@ -78,4 +83,36 @@ export interface Rejet {
   numero_rfq: string;
   code_fournisseur: string;
   nom_fournisseur: string;
+}
+
+// ══════════════════════════════════════════════════════════
+// Dashboard Comparaison
+// ══════════════════════════════════════════════════════════
+
+export interface OffreDashboard {
+  detail_id: number;
+  code_fournisseur: string;
+  nom_fournisseur: string;
+  prix_unitaire_ht: number;
+  quantite_disponible: number | null;
+  date_livraison: string | null;
+  marque_conforme: boolean | null;
+  marque_proposee: string | null;
+  devise: string;
+  date_reponse: string;
+}
+
+export interface ArticleDashboard {
+  code_article: string;
+  designation: string | null;
+  marque_demandee: string | null;
+  das: string[];
+  offres: OffreDashboard[];
+  analyse: ComparaisonAnalyse;
+}
+
+export interface ComparaisonDashboardResponse {
+  articles: ArticleDashboard[];
+  total_articles: number;
+  total_offres: number;
 }

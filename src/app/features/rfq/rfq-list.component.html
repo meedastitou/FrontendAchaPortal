@@ -1,0 +1,150 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Demandes de Cotation (RFQ)</h1>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filters-card">
+    <div class="filters">
+      <div class="filter-group">
+        <label>Recherche</label>
+        <input
+          type="text"
+          placeholder="N RFQ ou fournisseur..."
+          [(ngModel)]="filters.search"
+          (input)="onSearch()"
+        />
+      </div>
+
+      <div class="filter-group">
+        <label>Statut</label>
+        <select [(ngModel)]="filters.statut" (change)="loadRFQs()">
+          <option [ngValue]="undefined">Tous</option>
+          <option value="envoye">Envoye</option>
+          <option value="repondu">Repondu</option>
+          <option value="rejete">Rejete</option>
+          <option value="relance_1">Relance 1</option>
+          <option value="relance_2">Relance 2</option>
+          <option value="relance_3">Relance 3</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Date debut</label>
+        <input type="date" [(ngModel)]="filters.date_debut" (change)="loadRFQs()" />
+      </div>
+
+      <div class="filter-group">
+        <label>Date fin</label>
+        <input type="date" [(ngModel)]="filters.date_fin" (change)="loadRFQs()" />
+      </div>
+
+      <button class="btn btn-secondary" (click)="resetFilters()">
+        Reinitialiser
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats rapides -->
+  <div class="quick-stats">
+    <div class="stat-badge envoye">
+      <span class="stat-count">{{ statsByStatus()['envoye'] || 0 }}</span>
+      <span class="stat-label">Envoyees</span>
+    </div>
+    <div class="stat-badge repondu">
+      <span class="stat-count">{{ statsByStatus()['repondu'] || 0 }}</span>
+      <span class="stat-label">Repondues</span>
+    </div>
+    <div class="stat-badge rejete">
+      <span class="stat-count">{{ statsByStatus()['rejete'] || 0 }}</span>
+      <span class="stat-label">Rejetees</span>
+    </div>
+    <div class="stat-badge relance">
+      <span class="stat-count">{{ getTotalRelances() }}</span>
+      <span class="stat-label">En relance</span>
+    </div>
+  </div>
+
+  <!-- Tableau -->
+  <div class="table-card">
+    @if (loading()) {
+      <div class="loading">Chargement...</div>
+    } @else if (rfqs().length === 0) {
+      <div class="empty">Aucune RFQ trouvee</div>
+    } @else {
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>N RFQ</th>
+            <th>Fournisseur</th>
+            <th>Date envoi</th>
+            <th>Statut</th>
+            <th>Relances</th>
+            <th>Articles</th>
+            <th>Reponse</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (rfq of rfqs(); track rfq.id) {
+            <tr>
+              <td>
+                <a [routerLink]="['/rfq', rfq.id]" class="code-link">
+                  {{ rfq.numero_rfq }}
+                </a>
+              </td>
+              <td>
+                <div class="fournisseur-cell">
+                  <span class="fournisseur-name">{{ rfq.nom_fournisseur }}</span>
+                  <span class="fournisseur-code">{{ rfq.code_fournisseur }}</span>
+                </div>
+              </td>
+              <td>{{ rfq.date_envoi | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                <span class="badge" [class]="'badge-' + rfq.statut">
+                  {{ formatStatut(rfq.statut) }}
+                </span>
+              </td>
+              <td>
+                <span class="relances" [class.warning]="rfq.nb_relances > 0">
+                  {{ rfq.nb_relances }}/3
+                </span>
+              </td>
+              <td>{{ rfq.lignes?.length || 0 }}</td>
+              <td>
+                @if (rfq.date_reponse) {
+                  <span class="date-reponse">{{ rfq.date_reponse | date:'dd/MM/yyyy' }}</span>
+                } @else {
+                  <span class="no-response">En attente</span>
+                }
+              </td>
+              <td>
+                <div class="actions">
+                  <a [routerLink]="['/rfq', rfq.id]" class="btn-icon" title="Voir details">
+                    V
+                  </a>
+                  @if (rfq.statut === 'repondu') {
+                    <a [routerLink]="['/reponses', 'rfq', rfq.uuid]" class="btn-icon success" title="Voir offre">
+                      O
+                    </a>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div class="pagination">
+        <span class="pagination-info">
+          {{ (page - 1) * limit + 1 }} - {{ Math.min(page * limit, total()) }} sur {{ total() }}
+        </span>
+        <div class="pagination-buttons">
+          <button [disabled]="page === 1" (click)="goToPage(page - 1)">Precedent</button>
+          <button [disabled]="page * limit >= total()" (click)="goToPage(page + 1)">Suivant</button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

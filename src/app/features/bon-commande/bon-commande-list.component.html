@@ -1,0 +1,170 @@
+<div class="bc-list-container">
+  <!-- Header -->
+  <div class="page-header">
+    <h1>Bons de Commande</h1>
+    <p class="subtitle">Créez et gérez vos bons de commande</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button
+      class="tab"
+      [class.active]="activeTab() === 'nouveau'"
+      (click)="setActiveTab('nouveau')">
+      Nouveau BC
+      @if (fournisseursDisponibles().length > 0) {
+        <span class="tab-badge">{{ fournisseursDisponibles().length }}</span>
+      }
+    </button>
+    <button
+      class="tab"
+      [class.active]="activeTab() === 'existant'"
+      (click)="setActiveTab('existant')">
+      BC Existants
+      @if (bonsCommande().length > 0) {
+        <span class="tab-badge">{{ bonsCommande().length }}</span>
+      }
+    </button>
+  </div>
+
+  <!-- Contenu Nouveau BC -->
+  @if (activeTab() === 'nouveau') {
+    <div class="tab-content">
+      @if (loadingFournisseurs()) {
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Chargement des fournisseurs...</p>
+        </div>
+      } @else if (fournisseursDisponibles().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">BC</div>
+          <h3>Aucun fournisseur disponible</h3>
+          <p>Toutes les réponses fournisseurs ont déjà été commandées.</p>
+        </div>
+      } @else {
+        <div class="info-banner">
+          <span class="info-icon">i</span>
+          <span>Sélectionnez un fournisseur pour créer un bon de commande. Vous pourrez ensuite choisir les lignes à inclure.</span>
+        </div>
+
+        <div class="fournisseurs-grid">
+          @for (fournisseur of fournisseursDisponibles(); track fournisseur.code_fournisseur) {
+            <div class="fournisseur-card" (click)="preparerBC(fournisseur.code_fournisseur)">
+              <div class="card-header">
+                <div class="fournisseur-info">
+                  <div class="fournisseur-avatar">{{ fournisseur.nom_fournisseur.charAt(0) }}</div>
+                  <div class="fournisseur-details">
+                    <h3>{{ fournisseur.nom_fournisseur }}</h3>
+                    <span class="code">{{ fournisseur.code_fournisseur }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-stats">
+                <div class="stat">
+                  <span class="stat-value">{{ fournisseur.nb_da_disponibles }}</span>
+                  <span class="stat-label">DA</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-value">{{ fournisseur.nb_lignes_total }}</span>
+                  <span class="stat-label">Lignes</span>
+                </div>
+                <div class="stat highlight">
+                  <span class="stat-value">{{ formatMontant(fournisseur.montant_total_ht) }}</span>
+                  <span class="stat-label">MAD HT</span>
+                </div>
+              </div>
+
+              <div class="card-das">
+                <h4>Demandes d'achat :</h4>
+                <div class="das-list">
+                  @for (da of fournisseur.das_disponibles; track da.numero_da) {
+                    <div class="da-chip">
+                      <span class="da-numero">{{ da.numero_da }}</span>
+                      <span class="da-lignes">{{ da.nb_lignes }} art.</span>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="card-footer">
+                <button class="btn-preparer">
+                  Préparer le BC
+                  <span class="arrow">→</span>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Contenu BC Existants -->
+  @if (activeTab() === 'existant') {
+    <div class="tab-content">
+      @if (loadingBC()) {
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Chargement des bons de commande...</p>
+        </div>
+      } @else if (bonsCommande().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">BC</div>
+          <h3>Aucun bon de commande</h3>
+          <p>Vous n'avez pas encore créé de bon de commande.</p>
+        </div>
+      } @else {
+        <div class="bc-table-container">
+          <table class="bc-table">
+            <thead>
+              <tr>
+                <th>N° BC</th>
+                <th>Fournisseur</th>
+                <th>Date</th>
+                <th>DA incluses</th>
+                <th>Lignes</th>
+                <th>Montant TTC</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (bc of bonsCommande(); track bc.numero_bc) {
+                <tr (click)="voirBC(bc.numero_bc)">
+                  <td class="bc-numero">{{ bc.numero_bc }}</td>
+                  <td>
+                    <div class="fournisseur-cell">
+                      <span class="nom">{{ bc.nom_fournisseur }}</span>
+                      <span class="code">{{ bc.code_fournisseur }}</span>
+                    </div>
+                  </td>
+                  <td>{{ formatDate(bc.date_creation) }}</td>
+                  <td>
+                    <div class="das-chips">
+                      @for (da of bc.das_incluses; track da) {
+                        <span class="da-mini-chip">{{ da }}</span>
+                      }
+                    </div>
+                  </td>
+                  <td class="center">{{ bc.nb_lignes }}</td>
+                  <td class="montant">{{ formatMontant(bc.montant_total_ttc) }} MAD</td>
+                  <td>
+                    <span class="badge" [class]="getStatutClass(bc.statut)">
+                      {{ getStatutLabel(bc.statut) }}
+                    </span>
+                  </td>
+                  <td>
+                    <button class="btn-voir" (click)="voirBC(bc.numero_bc); $event.stopPropagation()">
+                      Voir
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+</div>

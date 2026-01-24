@@ -58,6 +58,20 @@ import { AuthService } from '../core/services/auth.service';
               <span class="nav-text">Comparaison</span>
             }
           </a>
+
+          <a routerLink="/decision" routerLinkActive="active" class="nav-item highlight">
+            <span class="nav-icon">V</span>
+            @if (!sidebarCollapsed) {
+              <span class="nav-text">Decisions</span>
+            }
+          </a>
+
+          <a routerLink="/bon-commande" routerLinkActive="active" class="nav-item">
+            <span class="nav-icon">B</span>
+            @if (!sidebarCollapsed) {
+              <span class="nav-text">Bons Commande</span>
+            }
+          </a>
         </nav>
 
         <div class="sidebar-footer">
@@ -197,6 +211,20 @@ import { AuthService } from '../core/services/auth.service';
 
     .nav-item.active {
       background: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+
+    .nav-item.highlight {
+      background: rgba(34, 197, 94, 0.2);
+      color: #86efac;
+    }
+
+    .nav-item.highlight:hover {
+      background: rgba(34, 197, 94, 0.3);
+    }
+
+    .nav-item.highlight.active {
+      background: rgba(34, 197, 94, 0.4);
       color: white;
     }
 

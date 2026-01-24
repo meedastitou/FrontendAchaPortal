@@ -1,0 +1,336 @@
+<div class="page">
+  <div class="page-header">
+    <h1>Decisions Achat</h1>
+    <p class="subtitle">DA avec reponses en attente de validation</p>
+  </div>
+
+  <!-- Stats globales -->
+  <div class="stats-bar">
+    <div class="stat">
+      <span class="stat-value">{{ totalDA() }}</span>
+      <span class="stat-label">DA en attente</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value">{{ totalArticles() }}</span>
+      <span class="stat-label">Articles a decider</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value highlight">
+        @if (montantMin() && montantMax()) {
+          {{ formatMontant(montantMin()) }} - {{ formatMontant(montantMax()) }} MAD
+        } @else {
+          -
+        }
+      </span>
+      <span class="stat-label">Montant potentiel</span>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filters-bar">
+    <select [(ngModel)]="filterPriorite" (change)="loadDAList()">
+      <option value="">Toutes priorites</option>
+      <option value="urgente">Urgente</option>
+      <option value="haute">Haute</option>
+      <option value="normale">Normale</option>
+      <option value="basse">Basse</option>
+    </select>
+  </div>
+
+  <!-- Liste des DA -->
+  <div class="da-list">
+    @if (loading()) {
+      <div class="loading">Chargement...</div>
+    } @else if (daList().length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">OK</div>
+        <h3>Aucune decision en attente</h3>
+        <p>Toutes les DA avec reponses ont ete traitees</p>
+      </div>
+    } @else {
+      @for (da of daList(); track da.id) {
+        <div class="da-card" (click)="selectDA(da)" [class.active]="selectedDA()?.numero_da === da.numero_da">
+          <div class="da-header">
+            <span class="da-numero">{{ da.numero_da }}</span>
+            <span class="priorite-badge" [class]="getPrioriteClass(da.priorite)">{{ da.priorite }}</span>
+          </div>
+          <div class="da-info">
+            <div class="info-row">
+              <span class="label">Articles:</span>
+              <span class="value">{{ da.nb_articles }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Reponses:</span>
+              <span class="value">{{ da.nb_reponses_recues }}/{{ da.nb_fournisseurs_sollicites }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Taux:</span>
+              <span class="value">{{ da.taux_reponse }}%</span>
+            </div>
+          </div>
+          <div class="da-montant">
+            @if (da.montant_min_total && da.montant_max_total) {
+              <span class="montant-range">
+                {{ formatMontant(da.montant_min_total) }} - {{ formatMontant(da.montant_max_total) }} MAD
+              </span>
+            }
+          </div>
+          @if (da.date_besoin) {
+            <div class="da-deadline">
+              Besoin: {{ formatDate(da.date_besoin) }}
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+
+  <!-- Modal Detail DA -->
+  @if (selectedDA() || loadingDetail()) {
+    <div class="modal-overlay" (click)="closeDetail()">
+      <div class="modal decision-modal" (click)="$event.stopPropagation()">
+        @if (loadingDetail()) {
+          <div class="modal-loading">
+            <div class="loading">Chargement des details...</div>
+          </div>
+        } @else if (selectedDA()) {
+          <!-- Header Modal -->
+          <div class="modal-header">
+            <div class="modal-title">
+              <h2>Decision: {{ selectedDA()!.numero_da }}</h2>
+              <span class="priorite-badge" [class]="getPrioriteClass(selectedDA()!.priorite)">
+                {{ selectedDA()!.priorite }}
+              </span>
+            </div>
+            <button class="close-btn" (click)="closeDetail()">x</button>
+          </div>
+
+          <!-- Resultat commande -->
+          @if (commandeResult()) {
+            <div class="commande-result" [class.success]="commandeResult()!.success" [class.error]="!commandeResult()!.success">
+              @if (commandeResult()!.success) {
+                <span class="result-icon">OK</span>
+                <div class="result-text">
+                  <strong>{{ commandeResult()!.message }}</strong>
+                  @if (commandeResult()!.numero) {
+                    <span>Commande: {{ commandeResult()!.numero }}</span>
+                  }
+                </div>
+              } @else {
+                <span class="result-icon">X</span>
+                <span class="result-text">{{ commandeResult()!.message }}</span>
+              }
+            </div>
+          }
+
+          <!-- Corps Modal -->
+          <div class="modal-body">
+            <!-- Stats DA -->
+            <div class="da-stats">
+              <div class="stat-item">
+                <span class="stat-label">Fournisseurs sollicites</span>
+                <span class="stat-value">{{ selectedDA()!.nb_fournisseurs_sollicites }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Reponses recues</span>
+                <span class="stat-value success">{{ selectedDA()!.nb_reponses_recues }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Taux de reponse</span>
+                <span class="stat-value">{{ selectedDA()!.taux_reponse }}%</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Jours depuis 1ere reponse</span>
+                <span class="stat-value">{{ selectedDA()!.jours_depuis_premiere_reponse ?? '-' }}</span>
+              </div>
+            </div>
+
+            <!-- Recommandation -->
+            @if (selectedDA()!.fournisseur_recommande_global) {
+              <div class="recommandation-box">
+                <div class="recommandation-header">
+                  <span class="recommandation-icon">*</span>
+                  <span class="recommandation-title">Recommandation</span>
+                </div>
+                <div class="recommandation-content">
+                  <strong>{{ selectedDA()!.fournisseur_recommande_global }}</strong>
+                  <span class="recommandation-reason">{{ selectedDA()!.raison_recommandation }}</span>
+                  @if (selectedDA()!.montant_recommande) {
+                    <span class="recommandation-montant">
+                      Montant: {{ formatMontant(selectedDA()!.montant_recommande) }} MAD
+                    </span>
+                  }
+                </div>
+                <button class="btn btn-recommandation" (click)="selectFournisseur(selectedDA()!.fournisseur_recommande_global!)">
+                  Selectionner ce fournisseur
+                </button>
+              </div>
+            }
+
+            <!-- Selection rapide fournisseur -->
+            <div class="fournisseur-selector">
+              <h4>Selection rapide par fournisseur</h4>
+              <div class="fournisseur-buttons">
+                @for (f of getUniqueFournisseurs(selectedDA()!); track f.code) {
+                  <button
+                    class="fournisseur-btn"
+                    [class.selected]="selectedFournisseur() === f.code"
+                    (click)="selectFournisseur(f.code)"
+                  >
+                    {{ f.nom }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Tableau comparaison -->
+            <h4>Comparaison des offres par article</h4>
+            @for (article of selectedDA()!.articles; track article.code_article) {
+              <div class="article-comparison">
+                <div class="article-header">
+                  <div class="article-info">
+                    <span class="article-code">{{ article.code_article }}</span>
+                    <span class="article-designation">{{ article.designation || '-' }}</span>
+                  </div>
+                  <div class="article-meta">
+                    <span>Qte: {{ article.quantite_demandee }} {{ article.unite || '' }}</span>
+                    @if (article.marque_souhaitee) {
+                      <span>Marque: {{ article.marque_souhaitee }}</span>
+                    }
+                  </div>
+                </div>
+
+                @if (article.nb_offres > 0) {
+                  <div class="article-stats">
+                    <span class="stat-tag">{{ article.nb_offres }} offre(s)</span>
+                    @if (article.prix_min && article.prix_max) {
+                      <span class="stat-tag prix">
+                        {{ formatMontant(article.prix_min) }} - {{ formatMontant(article.prix_max) }} MAD
+                      </span>
+                      @if (article.ecart_prix_pourcent && article.ecart_prix_pourcent > 0) {
+                        <span class="stat-tag ecart" [class.high]="article.ecart_prix_pourcent > 20">
+                          Ecart: {{ article.ecart_prix_pourcent }}%
+                        </span>
+                      }
+                    }
+                  </div>
+
+                  <div class="offres-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Fournisseur</th>
+                          <th>Prix Unit. HT</th>
+                          <th>Total HT</th>
+                          <th>Delai</th>
+                          <th>Marque</th>
+                          <th>Score</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (offre of article.offres; track offre.code_fournisseur) {
+                          <tr
+                            [class.best-price]="offre.nom_fournisseur === article.meilleur_prix_fournisseur"
+                            [class.recommended]="offre.nom_fournisseur === article.recommande_fournisseur"
+                            [class.selected]="isOffreSelected(article, offre)"
+                          >
+                            <td class="fournisseur-cell">
+                              <span class="fournisseur-nom">{{ offre.nom_fournisseur }}</span>
+                              @if (offre.nom_fournisseur === article.meilleur_prix_fournisseur) {
+                                <span class="badge-best">Meilleur prix</span>
+                              }
+                              @if (offre.nom_fournisseur === article.recommande_fournisseur) {
+                                <span class="badge-recommended">Recommande</span>
+                              }
+                            </td>
+                            <td class="prix-cell">
+                              @if (offre.prix_unitaire_ht) {
+                                {{ formatMontant(offre.prix_unitaire_ht) }} {{ offre.devise }}
+                              } @else {
+                                <span class="no-prix">Non propose</span>
+                              }
+                            </td>
+                            <td class="total-cell">
+                              @if (offre.prix_unitaire_ht) {
+                                {{ formatMontant(offre.prix_unitaire_ht * article.quantite_demandee) }} {{ offre.devise }}
+                              } @else {
+                                -
+                              }
+                            </td>
+                            <td>
+                              @if (offre.delai_jours !== null) {
+                                {{ offre.delai_jours }} j
+                              } @else {
+                                -
+                              }
+                            </td>
+                            <td>
+                              @if (offre.marque_conforme !== null) {
+                                <span [class.conforme]="offre.marque_conforme" [class.non-conforme]="!offre.marque_conforme">
+                                  {{ offre.marque_proposee || (offre.marque_conforme ? 'OK' : 'Non') }}
+                                </span>
+                              } @else {
+                                -
+                              }
+                            </td>
+                            <td>
+                              @if (offre.score_global) {
+                                <span class="score" [class]="getScoreClass(offre.score_global)">
+                                  {{ offre.score_global | number:'1.0-0' }}
+                                </span>
+                              } @else {
+                                -
+                              }
+                            </td>
+                            <td>
+                              @if (offre.prix_unitaire_ht) {
+                                <button
+                                  class="btn-select"
+                                  [class.selected]="isOffreSelected(article, offre)"
+                                  (click)="selectOffreForArticle(article, offre)"
+                                >
+                                  {{ isOffreSelected(article, offre) ? 'OK' : 'Select' }}
+                                </button>
+                              }
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                } @else {
+                  <div class="no-offres">Aucune offre recue pour cet article</div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Footer Modal -->
+          <div class="modal-footer">
+            <div class="selection-summary">
+              <span class="selection-count">{{ selections().size }} article(s) selectionne(s)</span>
+              <span class="selection-total">
+                Total: <strong>{{ formatMontant(getMontantTotalSelection()) }} MAD</strong>
+              </span>
+            </div>
+            <div class="footer-actions">
+              <button class="btn btn-secondary" (click)="closeDetail()">Annuler</button>
+              <button
+                class="btn btn-primary"
+                [disabled]="!canCreateCommande() || creatingCommande()"
+                (click)="creerCommande()"
+              >
+                @if (creatingCommande()) {
+                  Creation...
+                } @else {
+                  Creer la commande
+                }
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

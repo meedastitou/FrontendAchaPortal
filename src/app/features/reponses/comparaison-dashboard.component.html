@@ -1,0 +1,215 @@
+<div class="page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Tableau Comparatif des Offres</h1>
+      <p>Comparez les reponses fournisseurs pour choisir la meilleure offre</p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Chargement des donnees...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-container">
+      <p class="error">{{ error() }}</p>
+      <button class="btn btn-primary" (click)="loadDashboard()">Reessayer</button>
+    </div>
+  } @else if (dashboard()) {
+    <!-- Stats Overview -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value">{{ dashboard()!.total_articles }}</div>
+        <div class="stat-label">Articles avec offres</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ dashboard()!.total_offres }}</div>
+        <div class="stat-label">Offres recues</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-value">{{ (dashboard()!.total_offres / dashboard()!.total_articles) | number:'1.1-1' }}</div>
+        <div class="stat-label">Offres / Article (moy.)</div>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-bar">
+      <input
+        type="text"
+        placeholder="Rechercher par code article, designation ou numero DA..."
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+      />
+      <span class="search-count">{{ filteredArticles().length }} article(s)</span>
+    </div>
+
+    <!-- Articles List -->
+    <div class="articles-grid">
+      @for (article of filteredArticles(); track article.code_article) {
+        <div class="article-card" (click)="selectArticle(article)">
+          <div class="article-header">
+            <div class="article-info">
+              <span class="code">{{ article.code_article }}</span>
+              <span class="designation">{{ article.designation || 'Sans designation' }}</span>
+            </div>
+            <div class="offres-count">
+              <span class="count">{{ article.analyse.nb_offres }}</span>
+              <span class="label">offre(s)</span>
+            </div>
+          </div>
+
+          <div class="article-das">
+            @for (da of article.das; track da) {
+              <span class="da-badge">{{ da }}</span>
+            }
+          </div>
+
+          <div class="article-prix">
+            <div class="prix-item best">
+              <span class="prix-label">Meilleur prix</span>
+              <span class="prix-value">{{ formatMontant(article.analyse.prix_min) }} MAD</span>
+            </div>
+            <div class="prix-item">
+              <span class="prix-label">Prix max</span>
+              <span class="prix-value">{{ formatMontant(article.analyse.prix_max) }} MAD</span>
+            </div>
+            @if (getEcartPrix(article) > 0) {
+              <div class="ecart">
+                <span class="ecart-label">Ecart</span>
+                <span class="ecart-value">{{ getEcartPrix(article) | number:'1.0-0' }}%</span>
+              </div>
+            }
+          </div>
+
+          <div class="article-footer">
+            <span class="best-fournisseur">
+              Recommande: <strong>{{ article.analyse.meilleur_fournisseur }}</strong>
+            </span>
+            <span class="voir-detail">Voir detail &rarr;</span>
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (filteredArticles().length === 0) {
+      <div class="empty-state">
+        <p>Aucun article trouve</p>
+      </div>
+    }
+  }
+
+  <!-- Modal Detail Article -->
+  @if (selectedArticle()) {
+    <div class="modal-overlay" (click)="closeDetail()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">
+            <h2>{{ selectedArticle()!.code_article }}</h2>
+            <p>{{ selectedArticle()!.designation || 'Sans designation' }}</p>
+            <div class="modal-das">
+              @for (da of selectedArticle()!.das; track da) {
+                <span class="da-badge">{{ da }}</span>
+              }
+            </div>
+          </div>
+          <button class="btn-close" (click)="closeDetail()">&times;</button>
+        </div>
+
+        @if (selectedArticle()!.marque_demandee) {
+          <div class="marque-demandee">
+            Marque demandee: <strong>{{ selectedArticle()!.marque_demandee }}</strong>
+          </div>
+        }
+
+        <!-- Analyse -->
+        <div class="analyse-section">
+          <div class="analyse-grid">
+            <div class="analyse-item">
+              <span class="value">{{ selectedArticle()!.analyse.nb_offres }}</span>
+              <span class="label">Offres</span>
+            </div>
+            <div class="analyse-item best">
+              <span class="value">{{ formatMontant(selectedArticle()!.analyse.prix_min) }}</span>
+              <span class="label">Prix min</span>
+            </div>
+            <div class="analyse-item">
+              <span class="value">{{ formatMontant(selectedArticle()!.analyse.prix_max) }}</span>
+              <span class="label">Prix max</span>
+            </div>
+            <div class="analyse-item">
+              <span class="value">{{ formatMontant(selectedArticle()!.analyse.prix_moyen) }}</span>
+              <span class="label">Prix moyen</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tableau comparatif -->
+        <div class="table-section">
+          <h3>Comparaison des offres</h3>
+          <div class="table-container">
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th class="rank-col">#</th>
+                  <th>Fournisseur</th>
+                  <th>Prix Unit. HT</th>
+                  <th>Qte dispo</th>
+                  <th>Date livraison</th>
+                  <th>Marque</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (offre of selectedArticle()!.offres; track offre.detail_id; let i = $index) {
+                  <tr [class.best-row]="isBestPrice(offre, selectedArticle()!)">
+                    <td class="rank-col">
+                      <span class="rank" [class.gold]="i === 0" [class.silver]="i === 1" [class.bronze]="i === 2">
+                        {{ i + 1 }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="fournisseur-cell">
+                        <span class="nom">{{ offre.nom_fournisseur }}</span>
+                        <span class="code">{{ offre.code_fournisseur }}</span>
+                      </div>
+                    </td>
+                    <td class="prix-col">
+                      <span class="prix" [class.best-prix]="isBestPrice(offre, selectedArticle()!)">
+                        {{ formatMontant(offre.prix_unitaire_ht) }}
+                      </span>
+                      <span class="devise">{{ offre.devise }}</span>
+                    </td>
+                    <td>{{ offre.quantite_disponible || '-' }}</td>
+                    <td>{{ formatDate(offre.date_livraison) }}</td>
+                    <td>
+                      @if (offre.marque_conforme === true) {
+                        <span class="badge conforme">Conforme</span>
+                      } @else if (offre.marque_conforme === false) {
+                        <span class="badge non-conforme">{{ offre.marque_proposee || 'Non conforme' }}</span>
+                      } @else {
+                        <span>{{ offre.marque_proposee || '-' }}</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recommandation -->
+        <div class="recommandation-section">
+          <div class="recommandation-box">
+            <span class="rec-icon">&#9733;</span>
+            <div class="rec-content">
+              <span class="rec-label">Fournisseur recommande (meilleur prix)</span>
+              <span class="rec-value">{{ selectedArticle()!.analyse.meilleur_fournisseur }}</span>
+              <span class="rec-prix">{{ formatMontant(selectedArticle()!.analyse.meilleur_prix) }} MAD</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,168 @@
+<div class="bc-detail-container">
+  @if (loading()) {
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Chargement du bon de commande...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-state">
+      <div class="error-icon">!</div>
+      <p>{{ error() }}</p>
+      <button class="btn-back" (click)="goBack()">Retour à la liste</button>
+    </div>
+  } @else if (bc()) {
+    <!-- Header -->
+    <div class="page-header">
+      <button class="btn-back" (click)="goBack()">
+        <span>&larr;</span> Retour
+      </button>
+
+      <div class="header-info">
+        <div class="bc-title">
+          <h1>{{ bc()!.numero_bc }}</h1>
+          <span class="badge" [class]="getStatutClass(bc()!.statut)">
+            {{ getStatutLabel(bc()!.statut) }}
+          </span>
+        </div>
+        <p class="date">Créé le {{ formatDate(bc()!.date_creation) }}</p>
+      </div>
+
+      @if (bc()!.statut === 'brouillon') {
+        <button
+          class="btn-valider"
+          (click)="validerBC()"
+          [disabled]="validating()">
+          @if (validating()) {
+            Validation...
+          } @else {
+            Valider le BC
+          }
+        </button>
+      }
+    </div>
+
+    <div class="content-grid">
+      <!-- Info cards -->
+      <div class="info-cards">
+        <!-- Fournisseur -->
+        <div class="info-card">
+          <h3>Fournisseur</h3>
+          <div class="fournisseur-info">
+            <div class="avatar">{{ bc()!.nom_fournisseur.charAt(0) }}</div>
+            <div class="details">
+              <span class="nom">{{ bc()!.nom_fournisseur }}</span>
+              <span class="code">{{ bc()!.code_fournisseur }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- DA incluses -->
+        <div class="info-card">
+          <h3>Demandes d'achat incluses</h3>
+          <div class="das-list">
+            @for (da of bc()!.das_incluses; track da) {
+              <span class="da-chip">{{ da }}</span>
+            }
+          </div>
+        </div>
+
+        <!-- Totaux -->
+        <div class="info-card totaux">
+          <h3>Montants</h3>
+          <div class="totaux-grid">
+            <div class="total-row">
+              <span>Total HT</span>
+              <span class="montant">{{ formatMontant(bc()!.montant_total_ht) }} {{ bc()!.devise }}</span>
+            </div>
+            <div class="total-row">
+              <span>TVA</span>
+              <span class="montant">{{ formatMontant(bc()!.montant_tva) }} {{ bc()!.devise }}</span>
+            </div>
+            <div class="total-row grand-total">
+              <span>Total TTC</span>
+              <span class="montant">{{ formatMontant(bc()!.montant_total_ttc) }} {{ bc()!.devise }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conditions -->
+        @if (bc()!.conditions_paiement || bc()!.lieu_livraison || bc()!.commentaire) {
+          <div class="info-card">
+            <h3>Conditions</h3>
+            @if (bc()!.conditions_paiement) {
+              <div class="condition-row">
+                <span class="label">Paiement</span>
+                <span class="value">{{ bc()!.conditions_paiement }}</span>
+              </div>
+            }
+            @if (bc()!.lieu_livraison) {
+              <div class="condition-row">
+                <span class="label">Livraison</span>
+                <span class="value">{{ bc()!.lieu_livraison }}</span>
+              </div>
+            }
+            @if (bc()!.commentaire) {
+              <div class="condition-row">
+                <span class="label">Notes</span>
+                <span class="value">{{ bc()!.commentaire }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Lignes -->
+      <div class="lignes-section">
+        <div class="section-header">
+          <h2>Lignes du BC</h2>
+          <span class="count">{{ bc()!.nb_lignes }} article(s)</span>
+        </div>
+
+        <div class="lignes-content">
+          @for (group of getLignesParDA(); track group.numero_da) {
+            <div class="da-group">
+              <div class="da-header">
+                <span class="da-badge">DA</span>
+                <span class="da-numero">{{ group.numero_da }}</span>
+                <span class="da-rfq" *ngIf="group.lignes[0]?.numero_rfq">
+                  RFQ: {{ group.lignes[0].numero_rfq }}
+                </span>
+              </div>
+
+              <table class="lignes-table">
+                <thead>
+                  <tr>
+                    <th>Article</th>
+                    <th>Désignation</th>
+                    <th class="col-num">Qté</th>
+                    <th class="col-num">P.U. HT</th>
+                    <th class="col-num">Total HT</th>
+                    <th class="col-num">Total TTC</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (ligne of group.lignes; track ligne.id) {
+                    <tr>
+                      <td class="code-article">{{ ligne.code_article }}</td>
+                      <td class="designation">{{ ligne.designation || '-' }}</td>
+                      <td class="col-num">{{ ligne.quantite }} {{ ligne.unite || '' }}</td>
+                      <td class="col-num">{{ formatMontant(ligne.prix_unitaire_ht) }}</td>
+                      <td class="col-num">{{ formatMontant(ligne.montant_ligne_ht) }}</td>
+                      <td class="col-num total">{{ formatMontant(ligne.montant_ligne_ttc) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    @if (bc()!.date_validation) {
+      <div class="validation-info">
+        Validé le {{ formatDate(bc()!.date_validation) }} par {{ bc()!.validee_par }}
+      </div>
+    }
+  }
+</div>

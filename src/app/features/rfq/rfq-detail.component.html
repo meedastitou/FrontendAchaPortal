@@ -1,0 +1,298 @@
+<div class="page">
+  <!-- Header -->
+  <div class="page-header">
+    <button class="btn-back" (click)="goBack()">
+      <span class="arrow">←</span> Retour
+    </button>
+    <div class="header-title">
+      @if (rfq()) {
+        <h1>RFQ {{ rfq()!.numero_rfq }}</h1>
+        <span class="badge" [class]="'badge-' + getStatutClass(rfq()!.statut)">
+          {{ formatStatut(rfq()!.statut) }}
+        </span>
+      }
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-container">
+      <div class="loading">Chargement...</div>
+    </div>
+  } @else if (error()) {
+    <div class="error-container">
+      <div class="error">{{ error() }}</div>
+      <button class="btn btn-primary" (click)="goBack()">Retour a la liste</button>
+    </div>
+  } @else if (rfq()) {
+    <!-- Informations RFQ -->
+    <div class="detail-grid">
+      <div class="card info-card">
+        <div class="card-header">
+          <h3>Informations RFQ</h3>
+        </div>
+        <div class="card-body">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Numero RFQ</span>
+              <span class="info-value highlight">{{ rfq()!.numero_rfq }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">UUID</span>
+              <span class="info-value uuid">{{ rfq()!.uuid }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Date envoi</span>
+              <span class="info-value">{{ formatDate(rfq()!.date_envoi) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Date limite reponse</span>
+              <span class="info-value">{{ formatDate(rfq()!.date_limite_reponse) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Jours depuis envoi</span>
+              <span class="info-value">{{ rfq()!.jours_depuis_envoi }} jours</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Relances</span>
+              <span class="info-value" [class.warning]="rfq()!.nb_relances > 0">
+                {{ rfq()!.nb_relances }}/3
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card info-card">
+        <div class="card-header">
+          <h3>Fournisseur</h3>
+          <a [routerLink]="['/fournisseurs', rfq()!.code_fournisseur]" class="btn-link">
+            Voir fiche
+          </a>
+        </div>
+        <div class="card-body">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Nom</span>
+              <span class="info-value">{{ rfq()!.nom_fournisseur }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Code</span>
+              <span class="info-value code">{{ rfq()!.code_fournisseur }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Email</span>
+              <span class="info-value">{{ rfq()!.email_fournisseur || '-' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Ouverture email</span>
+              <span class="info-value">{{ formatDate(rfq()!.date_ouverture_email) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Clic formulaire</span>
+              <span class="info-value">{{ formatDate(rfq()!.date_clic_formulaire) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Date reponse</span>
+              <span class="info-value" [class.success]="rfq()!.date_reponse">
+                {{ formatDate(rfq()!.date_reponse) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Articles demandes -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Articles demandes ({{ rfq()!.lignes.length }})</h3>
+      </div>
+      <div class="card-body">
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Code Article</th>
+                <th>Designation</th>
+                <th>N DA</th>
+                <th>Quantite</th>
+                <th>Unite</th>
+                <th>Marque souhaitee</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (ligne of rfq()!.lignes; track ligne.id) {
+                <tr>
+                  <td class="code">{{ ligne.code_article }}</td>
+                  <td>{{ ligne.designation_article || '-' }}</td>
+                  <td>{{ ligne.numero_da }}</td>
+                  <td class="qty">{{ ligne.quantite_demandee }}</td>
+                  <td>{{ ligne.unite || '-' }}</td>
+                  <td>{{ ligne.marque_souhaitee || '-' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reponse Fournisseur -->
+    @if (rfq()!.statut === 'repondu') {
+      <div class="card reponse-card">
+        <div class="card-header">
+          <h3>Reponse Fournisseur</h3>
+          @if (reponse()) {
+            <span class="montant-total">
+              Total HT: {{ formatMontant(getMontantTotal()) }} {{ reponse()!.entete.devise }}
+            </span>
+          }
+        </div>
+        <div class="card-body">
+          @if (loadingReponse()) {
+            <div class="loading">Chargement de la reponse...</div>
+          } @else if (reponse()) {
+            <!-- Info reponse -->
+            <div class="reponse-info">
+              <div class="info-item">
+                <span class="info-label">Reference fournisseur</span>
+                <span class="info-value">{{ reponse()!.entete.reference_fournisseur || '-' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Date reponse</span>
+                <span class="info-value">{{ formatDate(reponse()!.entete.date_reponse) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Devise</span>
+                <span class="info-value">{{ reponse()!.entete.devise }}</span>
+              </div>
+              @if (reponse()!.entete.commentaire) {
+                <div class="info-item full-width">
+                  <span class="info-label">Commentaire</span>
+                  <span class="info-value">{{ reponse()!.entete.commentaire }}</span>
+                </div>
+              }
+              @if (reponse()!.entete.fichier_devis_url) {
+                <div class="info-item">
+                  <span class="info-label">Devis</span>
+                  <a [href]="reponse()!.entete.fichier_devis_url" target="_blank" class="btn-link">
+                    Telecharger le devis
+                  </a>
+                </div>
+              }
+            </div>
+
+            <!-- Tableau des offres -->
+            <h4>Offre detaillee</h4>
+            <div class="table-container">
+              <table class="data-table offre-table">
+                <thead>
+                  <tr>
+                    <th>Code Article</th>
+                    <th>Designation</th>
+                    <th>Qte demandee</th>
+                    <th>Prix Unit. HT</th>
+                    <th>Total HT</th>
+                    <th>Delai livraison</th>
+                    <th>Marque</th>
+                    <th>Qte disponible</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (ligne of rfq()!.lignes; track ligne.id) {
+                    @let detail = getDetailForLigne(ligne.id);
+                    <tr [class.no-price]="!detail?.prix_unitaire_ht">
+                      <td class="code">{{ ligne.code_article }}</td>
+                      <td>{{ ligne.designation_article || '-' }}</td>
+                      <td class="qty">{{ ligne.quantite_demandee }}</td>
+                      <td class="price">
+                        @if (detail?.prix_unitaire_ht) {
+                          {{ formatMontant(detail!.prix_unitaire_ht) }} {{ reponse()!.entete.devise }}
+                        } @else {
+                          <span class="no-data">Non propose</span>
+                        }
+                      </td>
+                      <td class="total">
+                        @if (detail?.prix_unitaire_ht) {
+                          {{ formatMontant(detail!.prix_unitaire_ht! * ligne.quantite_demandee) }} {{ reponse()!.entete.devise }}
+                        } @else {
+                          -
+                        }
+                      </td>
+                      <td>
+                        @if (detail?.date_livraison) {
+                          {{ detail!.date_livraison | date:'dd/MM/yyyy' }}
+                        } @else {
+                          -
+                        }
+                      </td>
+                      <td>
+                        @if (detail) {
+                          <span [class.conforme]="detail.marque_conforme" [class.non-conforme]="detail.marque_conforme === false">
+                            {{ detail.marque_proposee || (detail.marque_conforme ? 'Conforme' : '-') }}
+                          </span>
+                        } @else {
+                          -
+                        }
+                      </td>
+                      <td>
+                        @if (detail?.quantite_disponible) {
+                          {{ detail!.quantite_disponible }}
+                        } @else {
+                          -
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="4" class="total-label">Total HT</td>
+                    <td class="total-value">{{ formatMontant(getMontantTotal()) }} {{ reponse()!.entete.devise }}</td>
+                    <td colspan="3"></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <!-- Actions -->
+            <div class="reponse-actions">
+              <a [routerLink]="['/comparaison']" [queryParams]="{article: rfq()!.lignes[0]?.code_article}" class="btn btn-secondary">
+                Comparer les offres
+              </a>
+            </div>
+          } @else {
+            <div class="empty">Aucune reponse trouvee</div>
+          }
+        </div>
+      </div>
+    } @else if (rfq()!.statut === 'rejete') {
+      <div class="card rejet-card">
+        <div class="card-header">
+          <h3>Cotation Rejetee</h3>
+        </div>
+        <div class="card-body">
+          <div class="rejet-info">
+            <span class="rejet-icon">X</span>
+            <p>Le fournisseur a refuse de repondre a cette demande de cotation.</p>
+          </div>
+        </div>
+      </div>
+    } @else {
+      <div class="card waiting-card">
+        <div class="card-header">
+          <h3>En attente de reponse</h3>
+        </div>
+        <div class="card-body">
+          <div class="waiting-info">
+            <span class="waiting-icon">...</span>
+            <p>Le fournisseur n'a pas encore repondu a cette demande.</p>
+            @if (rfq()!.nb_relances > 0) {
+              <p class="relance-info">{{ rfq()!.nb_relances }} relance(s) envoyee(s)</p>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>

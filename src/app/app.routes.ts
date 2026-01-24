@@ -28,12 +28,36 @@ export const routes: Routes = [
         loadComponent: () => import('./features/rfq/rfq-list.component').then(m => m.RFQListComponent)
       },
       {
+        path: 'rfq/:id',
+        loadComponent: () => import('./features/rfq/rfq-detail.component').then(m => m.RFQDetailComponent)
+      },
+      {
         path: 'reponses',
         loadComponent: () => import('./features/reponses/reponse-list.component').then(m => m.ReponseListComponent)
       },
       {
+        path: 'reponses/:id',
+        loadComponent: () => import('./features/reponses/reponse-detail.component').then(m => m.ReponseDetailComponent)
+      },
+      {
         path: 'comparaison',
-        loadComponent: () => import('./features/reponses/comparaison.component').then(m => m.ComparaisonComponent)
+        loadComponent: () => import('./features/reponses/comparaison-dashboard.component').then(m => m.ComparaisonDashboardComponent)
+      },
+      {
+        path: 'decision',
+        loadComponent: () => import('./features/decision/decision.component').then(m => m.DecisionComponent)
+      },
+      {
+        path: 'bon-commande',
+        loadComponent: () => import('./features/bon-commande/bon-commande-list.component').then(m => m.BonCommandeListComponent)
+      },
+      {
+        path: 'bon-commande/preparer/:codeFournisseur',
+        loadComponent: () => import('./features/bon-commande/bon-commande-preparer.component').then(m => m.BonCommandePreparerComponent)
+      },
+      {
+        path: 'bon-commande/:numeroBC',
+        loadComponent: () => import('./features/bon-commande/bon-commande-detail.component').then(m => m.BonCommandeDetailComponent)
       },
       {
         path: '',

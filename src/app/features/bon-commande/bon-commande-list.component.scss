@@ -1,0 +1,431 @@
+.bc-list-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: 24px;
+
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 8px 0;
+  }
+
+  .subtitle {
+    color: #6b7280;
+    font-size: 14px;
+    margin: 0;
+  }
+}
+
+// Tabs
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 0;
+}
+
+.tab {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  margin-bottom: -2px;
+
+  &:hover {
+    color: #374151;
+  }
+
+  &.active {
+    color: #2563eb;
+    border-bottom: 2px solid #2563eb;
+  }
+}
+
+.tab-badge {
+  background: #2563eb;
+  color: white;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.tab.active .tab-badge {
+  background: #2563eb;
+}
+
+// Loading & Empty
+.loading, .empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  background: #f3f4f6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: #9ca3af;
+  margin: 0 auto 16px;
+}
+
+.empty-state h3 {
+  color: #374151;
+  margin: 0 0 8px 0;
+}
+
+.empty-state p {
+  color: #6b7280;
+  margin: 0;
+}
+
+// Info Banner
+.info-banner {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  color: #1e40af;
+  font-size: 14px;
+}
+
+.info-icon {
+  width: 24px;
+  height: 24px;
+  background: #2563eb;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+// Fournisseurs Grid
+.fournisseurs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 20px;
+}
+
+.fournisseur-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: #2563eb;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+  }
+}
+
+.card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.fournisseur-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fournisseur-avatar {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: white;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.fournisseur-details {
+  h3 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  .code {
+    font-size: 12px;
+    color: #6b7280;
+  }
+}
+
+.card-stats {
+  display: flex;
+  padding: 16px 20px;
+  gap: 24px;
+  background: #f9fafb;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #374151;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: #6b7280;
+    text-transform: uppercase;
+  }
+
+  &.highlight {
+    margin-left: auto;
+
+    .stat-value {
+      color: #059669;
+    }
+  }
+}
+
+.card-das {
+  padding: 16px 20px;
+
+  h4 {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 0 0 12px 0;
+    font-weight: 500;
+  }
+}
+
+.das-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.da-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f3f4f6;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+
+  .da-numero {
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .da-lignes {
+    color: #6b7280;
+  }
+}
+
+.card-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.btn-preparer {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  }
+
+  .arrow {
+    font-size: 16px;
+  }
+}
+
+// Table BC
+.bc-table-container {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.bc-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: 14px 16px;
+    text-align: left;
+  }
+
+  th {
+    background: #f9fafb;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  tbody tr {
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:hover {
+      background: #f9fafb;
+    }
+
+    &:not(:last-child) td {
+      border-bottom: 1px solid #f3f4f6;
+    }
+  }
+
+  td.center {
+    text-align: center;
+  }
+}
+
+.bc-numero {
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.fournisseur-cell {
+  display: flex;
+  flex-direction: column;
+
+  .nom {
+    font-weight: 500;
+    color: #1f2937;
+  }
+
+  .code {
+    font-size: 11px;
+    color: #6b7280;
+  }
+}
+
+.das-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.da-mini-chip {
+  background: #e5e7eb;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #374151;
+}
+
+.montant {
+  font-weight: 600;
+  color: #059669;
+}
+
+// Badges
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-success {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.badge-info {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-primary {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.badge-danger {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.btn-voir {
+  padding: 6px 12px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: #e5e7eb;
+  }
+}

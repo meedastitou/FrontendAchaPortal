@@ -1,0 +1,388 @@
+<div class="page">
+  <!-- Header -->
+  <div class="page-header">
+    <button class="btn-back" (click)="goBack()">
+      <span class="arrow">&larr;</span> Retour
+    </button>
+    <div class="header-title">
+      @if (reponse()) {
+        <h1>Reponse #{{ reponse()!.entete.id }}</h1>
+        <span class="rfq-badge">{{ reponse()!.numero_rfq }}</span>
+        @if (dasReponse().length > 0) {
+          <div class="da-badges">
+            @for (da of dasReponse(); track da) {
+              <span class="da-badge">{{ da }}</span>
+            }
+          </div>
+        }
+      }
+    </div>
+    @if (reponse() && !modeConversion()) {
+      <button class="btn-convert" (click)="toggleModeConversion()">
+        Convertir en BC
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="loading-container">
+      <div class="loading">Chargement...</div>
+    </div>
+  } @else if (error()) {
+    <div class="error-container">
+      <div class="error">{{ error() }}</div>
+      <button class="btn btn-primary" (click)="goBack()">Retour a la liste</button>
+    </div>
+  } @else if (reponse()) {
+    <!-- Informations -->
+    <div class="detail-grid">
+      <div class="card">
+        <div class="card-header">
+          <h3>Informations Reponse</h3>
+        </div>
+        <div class="card-body">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Numero RFQ</span>
+              <a [routerLink]="['/rfq']" class="info-value link">{{ reponse()!.numero_rfq }}</a>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Reference fournisseur</span>
+              <span class="info-value">{{ reponse()!.entete.reference_fournisseur || '-' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Date reponse</span>
+              <span class="info-value">{{ formatDate(reponse()!.entete.date_reponse) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Devise</span>
+              <span class="info-value">{{ reponse()!.entete.devise }}</span>
+            </div>
+            @if (reponse()!.entete.commentaire) {
+              <div class="info-item full-width">
+                <span class="info-label">Commentaire</span>
+                <span class="info-value">{{ reponse()!.entete.commentaire }}</span>
+              </div>
+            }
+            @if (reponse()!.entete.fichier_devis_url) {
+              <div class="info-item">
+                <span class="info-label">Fichier devis</span>
+                <a [href]="reponse()!.entete.fichier_devis_url" target="_blank" class="btn-download">
+                  Telecharger
+                </a>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>Fournisseur</h3>
+          <a [routerLink]="['/fournisseurs', reponse()!.code_fournisseur]" class="btn-link">
+            Voir fiche
+          </a>
+        </div>
+        <div class="card-body">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Nom</span>
+              <span class="info-value">{{ reponse()!.nom_fournisseur }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Code</span>
+              <span class="info-value code">{{ reponse()!.code_fournisseur }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mode Conversion BC -->
+    @if (modeConversion()) {
+      <div class="conversion-panel">
+        <div class="conversion-header">
+          <div class="conversion-title">
+            <h2>Conversion vers Bon de Commande</h2>
+            <p>Sélectionnez les articles conformes et modifiez les valeurs si nécessaire</p>
+          </div>
+          <button class="btn-cancel" (click)="toggleModeConversion()">Annuler</button>
+        </div>
+
+        <!-- Selection actions -->
+        <div class="selection-bar">
+          <div class="selection-info">
+            <span class="count">{{ articlesSelectionnes().length }} article(s) sélectionné(s)</span>
+            @if (dasSelectionnees().length > 0) {
+              <span class="das-info">
+                DA{{ dasSelectionnees().length > 1 ? 's' : '' }}:
+                @for (da of dasSelectionnees(); track da; let last = $last) {
+                  <strong>{{ da }}</strong>{{ !last ? ', ' : '' }}
+                }
+              </span>
+            }
+            <span class="total">Total: {{ formatMontant(totalSelectionne()) }} {{ reponse()!.entete.devise }}</span>
+          </div>
+          <div class="selection-actions">
+            <button class="btn-link" (click)="selectAll()">Tout sélectionner</button>
+            <span class="separator">|</span>
+            <button class="btn-link" (click)="deselectAll()">Tout désélectionner</button>
+          </div>
+        </div>
+
+        <!-- Table editable -->
+        <div class="table-container editable">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="col-check"></th>
+                <th>N° DA</th>
+                <th>Code Article</th>
+                <th>Désignation</th>
+                <th>Marque</th>
+                <th class="col-edit">Quantité</th>
+                <th class="col-edit">Prix Unit. HT</th>
+                <th class="col-edit">Date Livraison</th>
+                <th>Total HT</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (article of articlesEditables(); track article.id) {
+                <tr [class.selected]="article.selected" [class.deselected]="!article.selected">
+                  <td class="col-check">
+                    <input
+                      type="checkbox"
+                      [checked]="article.selected"
+                      (change)="toggleArticle(article)"
+                    />
+                  </td>
+                  <td class="da-number">{{ article.numero_da || '-' }}</td>
+                  <td class="code">{{ article.code_article }}</td>
+                  <td class="designation">{{ article.designation_article || '-' }}</td>
+                  <td>
+                    @if (article.marque_effective) {
+                      <span [class.conforme]="article.marque_conforme" [class.non-conforme]="article.marque_conforme === false">
+                        {{ article.marque_effective }}
+                      </span>
+                    } @else {
+                      <span class="no-data">-</span>
+                    }
+                  </td>
+                  <td class="col-edit">
+                    <input
+                      type="number"
+                      [value]="article.quantite_modifiee"
+                      (input)="updateQuantite(article, $event)"
+                      [disabled]="!article.selected"
+                      min="0"
+                      step="1"
+                      class="input-edit"
+                    />
+                  </td>
+                  <td class="col-edit">
+                    <input
+                      type="number"
+                      [value]="article.prix_modifie"
+                      (input)="updatePrix(article, $event)"
+                      [disabled]="!article.selected"
+                      min="0"
+                      step="0.01"
+                      class="input-edit"
+                    />
+                  </td>
+                  <td class="col-edit">
+                    <input
+                      type="date"
+                      [value]="article.date_modifiee"
+                      (input)="updateDate(article, $event)"
+                      [disabled]="!article.selected"
+                      class="input-edit date"
+                    />
+                  </td>
+                  <td class="total">
+                    {{ formatMontant(article.quantite_modifiee * article.prix_modifie) }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- BC Fields -->
+        <div class="bc-fields">
+          <h4>Informations du Bon de Commande</h4>
+          <div class="fields-grid">
+            <div class="field">
+              <label>Conditions de paiement</label>
+              <input
+                type="text"
+                [ngModel]="conditionsPaiement()"
+                (ngModelChange)="conditionsPaiement.set($event)"
+                placeholder="Ex: 30 jours fin de mois"
+              />
+            </div>
+            <div class="field">
+              <label>Lieu de livraison</label>
+              <input
+                type="text"
+                [ngModel]="lieuLivraison()"
+                (ngModelChange)="lieuLivraison.set($event)"
+                placeholder="Ex: Entrepôt principal"
+              />
+            </div>
+            <div class="field full">
+              <label>Commentaire</label>
+              <textarea
+                rows="2"
+                [ngModel]="commentaireBC()"
+                (ngModelChange)="commentaireBC.set($event)"
+                placeholder="Notes supplémentaires..."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Confirm button -->
+        <div class="conversion-footer">
+          <div class="recap">
+            <span>{{ articlesSelectionnes().length }} article(s) - {{ dasSelectionnees().length }} DA{{ dasSelectionnees().length > 1 ? 's' : '' }}</span>
+            <span class="montant">{{ formatMontant(totalSelectionne()) }} {{ reponse()!.entete.devise }} HT</span>
+          </div>
+          <button
+            class="btn-confirm"
+            (click)="convertirVersBC()"
+            [disabled]="articlesSelectionnes().length === 0 || converting()">
+            @if (converting()) {
+              <span class="spinner"></span> Envoi en cours...
+            } @else {
+              Confirmer et envoyer vers Sage X3
+            }
+          </button>
+        </div>
+      </div>
+    } @else {
+      <!-- Montant Total -->
+      <div class="total-card">
+        <div class="total-content">
+          <span class="total-label">Montant Total HT</span>
+          <span class="total-value">{{ formatMontant(getMontantTotal()) }} {{ reponse()!.entete.devise }}</span>
+        </div>
+      </div>
+
+      <!-- Details Articles (mode lecture) -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Details des articles ({{ reponse()!.details.length }})</h3>
+        </div>
+        <div class="card-body">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>N° DA</th>
+                  <th>Code Article</th>
+                  <th>Désignation</th>
+                  <th>Prix Unit. HT</th>
+                  <th>Quantite dispo</th>
+                  <th>Total HT</th>
+                  <th>Delai livraison</th>
+                  <th>Marque</th>
+                  <th>Commentaire</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (detail of reponse()!.details; track detail.id) {
+                  <tr>
+                    <td class="da-number">{{ detail.numero_da || '-' }}</td>
+                    <td class="code">{{ detail.code_article }}</td>
+                    <td class="designation">{{ detail.designation_article || '-' }}</td>
+                    <td class="price">
+                      @if (detail.prix_unitaire_ht) {
+                        {{ formatMontant(detail.prix_unitaire_ht) }} {{ reponse()!.entete.devise }}
+                      } @else {
+                        <span class="no-data">-</span>
+                      }
+                    </td>
+                    <td>{{ detail.quantite_disponible || '-' }}</td>
+                    <td class="total">
+                      @if (detail.prix_unitaire_ht && detail.quantite_disponible) {
+                        {{ formatMontant(detail.prix_unitaire_ht * detail.quantite_disponible) }} {{ reponse()!.entete.devise }}
+                      } @else {
+                        -
+                      }
+                    </td>
+                    <td>
+                      @if (detail.date_livraison) {
+                        {{ detail.date_livraison | date:'dd/MM/yyyy' }}
+                      } @else {
+                        -
+                      }
+                    </td>
+                    <td>
+                      @if (detail.marque_conforme !== null) {
+                        <span [class.conforme]="detail.marque_conforme" [class.non-conforme]="!detail.marque_conforme">
+                          {{ detail.marque_conforme ? detail.marque_demandee : detail.marque_proposee }}
+                        </span>
+                      } @else {
+                        {{ detail.marque_proposee || '-' }}
+                      }
+                    </td>
+                    <td class="comment">{{ detail.commentaire_article || '-' }}</td>
+                  </tr>
+                }
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="5" class="total-label">Total HT</td>
+                  <td class="total-value">{{ formatMontant(getMontantTotal()) }} {{ reponse()!.entete.devise }}</td>
+                  <td colspan="3"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="actions-bar">
+        <a [routerLink]="['/comparaison']" [queryParams]="{article: reponse()!.details[0]?.code_article}" class="btn btn-secondary">
+          Comparer les offres
+        </a>
+      </div>
+    }
+  }
+
+  <!-- Success Modal -->
+  @if (conversionSuccess()) {
+    <div class="modal-overlay" (click)="closeSuccessModal()">
+      <div class="modal-content success" (click)="$event.stopPropagation()">
+        <div class="modal-icon success">✓</div>
+        <h3>Envoi réussi !</h3>
+        <p>La demande de création de BC a été envoyée vers Sage X3</p>
+
+        @if (conversionResult()) {
+          <div class="result-details">
+            <div class="detail-row">
+              <span>ID Requête RPA</span>
+              <strong>{{ conversionResult().rpa_request_id }}</strong>
+            </div>
+            <div class="detail-row">
+              <span>Fournisseur</span>
+              <strong>{{ conversionResult().nom_fournisseur }}</strong>
+            </div>
+            <div class="detail-row">
+              <span>Articles</span>
+              <strong>{{ conversionResult().nb_articles }}</strong>
+            </div>
+            <div class="detail-row">
+              <span>Montant HT</span>
+              <strong>{{ formatMontant(conversionResult().montant_total_ht) }} MAD</strong>
+            </div>
+          </div>
+        }
+
+        <button class="btn-close-modal" (click)="closeSuccessModal()">Fermer</button>
+      </div>
+    </div>
+  }
+</div>
