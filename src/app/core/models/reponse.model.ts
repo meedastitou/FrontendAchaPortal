@@ -27,6 +27,9 @@ export interface ReponseDetail {
   designation_article: string | null;
   marque_demandee: string | null;
   numero_da: string | null;
+  quantite_demandee: number | null;
+  // Champ depuis articles_ref (prix maximum d'achat)
+  tarif_reference: number | null;
 }
 
 export interface ReponseComplete {
@@ -106,6 +109,8 @@ export interface ArticleDashboard {
   code_article: string;
   designation: string | null;
   marque_demandee: string | null;
+  tarif_reference: number | null;
+  quantite_demandee: number;
   das: string[];
   offres: OffreDashboard[];
   analyse: ComparaisonAnalyse;

@@ -5,3 +5,4 @@ export * from './rfq.model';
 export * from './reponse.model';
 export * from './decision.model';
 export * from './bon-commande.model';
+export * from './selection.model';

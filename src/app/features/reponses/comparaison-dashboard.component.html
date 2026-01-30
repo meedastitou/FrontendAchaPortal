@@ -5,7 +5,30 @@
       <h1>Tableau Comparatif des Offres</h1>
       <p>Comparez les reponses fournisseurs pour choisir la meilleure offre</p>
     </div>
+    <div class="header-actions">
+      <button
+        class="btn btn-secondary"
+        (click)="selectionAutomatique()"
+        [disabled]="selectionLoading()"
+      >
+        @if (selectionLoading()) {
+          <span class="spinner-small"></span>
+        }
+        Selection Auto (Meilleur Prix)
+      </button>
+      @if (nbSelections() > 0) {
+        <button class="btn btn-primary" (click)="allerPreBC()">
+          Pre-BC ({{ nbSelections() }} articles)
+        </button>
+      }
+    </div>
   </div>
+
+  @if (selectionMessage()) {
+    <div class="selection-message">
+      {{ selectionMessage() }}
+    </div>
+  }
 
   @if (loading()) {
     <div class="loading-container">
@@ -66,8 +89,27 @@
             }
           </div>
 
+          <div class="article-meta">
+            <div class="meta-item">
+              <span class="meta-label">Qte demandee:</span>
+              <span class="meta-value">{{ formatMontant(article.quantite_demandee) }}</span>
+            </div>
+            @if (article.marque_demandee) {
+              <div class="meta-item">
+                <span class="meta-label">Marque:</span>
+                <span class="meta-value brand">{{ article.marque_demandee }}</span>
+              </div>
+            }
+          </div>
+
           <div class="article-prix">
-            <div class="prix-item best">
+            @if (article.tarif_reference) {
+              <div class="prix-item tarif-ref">
+                <span class="prix-label">Tarif Réf.</span>
+                <span class="prix-value">{{ formatMontant(article.tarif_reference) }} MAD</span>
+              </div>
+            }
+            <div class="prix-item best" [class.depasse-tarif]="article.tarif_reference && article.analyse.prix_min && article.analyse.prix_min > article.tarif_reference">
               <span class="prix-label">Meilleur prix</span>
               <span class="prix-value">{{ formatMontant(article.analyse.prix_min) }} MAD</span>
             </div>
@@ -84,11 +126,20 @@
           </div>
 
           <div class="article-footer">
-            <span class="best-fournisseur">
-              Recommande: <strong>{{ article.analyse.meilleur_fournisseur }}</strong>
-            </span>
+            @if (hasSelection(article)) {
+              <span class="selected-fournisseur">
+                Selectionne: <strong>{{ getSelectedFournisseur(article) }}</strong>
+              </span>
+            } @else {
+              <span class="best-fournisseur">
+                Recommande: <strong>{{ article.analyse.meilleur_fournisseur }}</strong>
+              </span>
+            }
             <span class="voir-detail">Voir detail &rarr;</span>
           </div>
+          @if (hasSelection(article)) {
+            <div class="selection-badge">Selectionne</div>
+          }
         </div>
       }
     </div>
@@ -117,20 +168,33 @@
           <button class="btn-close" (click)="closeDetail()">&times;</button>
         </div>
 
-        @if (selectedArticle()!.marque_demandee) {
-          <div class="marque-demandee">
-            Marque demandee: <strong>{{ selectedArticle()!.marque_demandee }}</strong>
+        <div class="article-details-row">
+          <div class="detail-item">
+            <span class="detail-label">Quantite demandee:</span>
+            <span class="detail-value">{{ formatMontant(selectedArticle()!.quantite_demandee) }}</span>
           </div>
-        }
+          @if (selectedArticle()!.marque_demandee) {
+            <div class="detail-item">
+              <span class="detail-label">Marque demandee:</span>
+              <span class="detail-value brand">{{ selectedArticle()!.marque_demandee }}</span>
+            </div>
+          }
+        </div>
 
         <!-- Analyse -->
         <div class="analyse-section">
+          @if (selectedArticle()!.tarif_reference) {
+            <div class="tarif-reference-banner">
+              <span class="tarif-label">Tarif de référence (prix max achat):</span>
+              <span class="tarif-value">{{ formatMontant(selectedArticle()!.tarif_reference) }} MAD</span>
+            </div>
+          }
           <div class="analyse-grid">
             <div class="analyse-item">
               <span class="value">{{ selectedArticle()!.analyse.nb_offres }}</span>
               <span class="label">Offres</span>
             </div>
-            <div class="analyse-item best">
+            <div class="analyse-item best" [class.depasse-tarif]="selectedArticle()!.tarif_reference && selectedArticle()!.analyse.prix_min && selectedArticle()!.analyse.prix_min! > selectedArticle()!.tarif_reference!">
               <span class="value">{{ formatMontant(selectedArticle()!.analyse.prix_min) }}</span>
               <span class="label">Prix min</span>
             </div>
@@ -148,6 +212,7 @@
         <!-- Tableau comparatif -->
         <div class="table-section">
           <h3>Comparaison des offres</h3>
+          <p class="table-hint">Cliquez sur "Selectionner" pour choisir un fournisseur pour chaque DA</p>
           <div class="table-container">
             <table class="comparison-table">
               <thead>
@@ -155,9 +220,10 @@
                   <th class="rank-col">#</th>
                   <th>Fournisseur</th>
                   <th>Prix Unit. HT</th>
-                  <th>Qte dispo</th>
+                  <th>Qte dispo / demandee</th>
                   <th>Date livraison</th>
-                  <th>Marque</th>
+                  <th>Marque proposee</th>
+                  <th class="action-col">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -180,7 +246,13 @@
                       </span>
                       <span class="devise">{{ offre.devise }}</span>
                     </td>
-                    <td>{{ offre.quantite_disponible || '-' }}</td>
+                    <td class="qty-col">
+                      <span class="qty-dispo" [class.qty-ok]="offre.quantite_disponible && offre.quantite_disponible >= selectedArticle()!.quantite_demandee" [class.qty-low]="offre.quantite_disponible && offre.quantite_disponible < selectedArticle()!.quantite_demandee">
+                        {{ offre.quantite_disponible || '-' }}
+                      </span>
+                      <span class="qty-separator">/</span>
+                      <span class="qty-demandee">{{ formatMontant(selectedArticle()!.quantite_demandee) }}</span>
+                    </td>
                     <td>{{ formatDate(offre.date_livraison) }}</td>
                     <td>
                       @if (offre.marque_conforme === true) {
@@ -189,6 +261,28 @@
                         <span class="badge non-conforme">{{ offre.marque_proposee || 'Non conforme' }}</span>
                       } @else {
                         <span>{{ offre.marque_proposee || '-' }}</span>
+                      }
+                    </td>
+                    <td class="action-col">
+                      @for (da of selectedArticle()!.das; track da) {
+                        @if (isOffreSelectionnee(selectedArticle()!, offre, da)) {
+                          <span class="btn-selected" title="DA: {{ da }}">
+                            Selectionne ({{ da }})
+                          </span>
+                        } @else {
+                          <button
+                            class="btn btn-sm btn-outline"
+                            (click)="selectionnerOffre(selectedArticle()!, offre, da); $event.stopPropagation()"
+                            [disabled]="selectionLoading()"
+                            title="Selectionner pour DA {{ da }}"
+                          >
+                            @if (selectedArticle()!.das.length > 1) {
+                              Sel. ({{ da }})
+                            } @else {
+                              Selectionner
+                            }
+                          </button>
+                        }
                       }
                     </td>
                   </tr>

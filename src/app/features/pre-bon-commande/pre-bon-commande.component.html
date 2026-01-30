@@ -1,0 +1,215 @@
+<div class="page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <button class="btn-back" (click)="retourComparaison()">
+        &larr; Retour
+      </button>
+      <h1>Pre-Bon de Commande</h1>
+      <p>Validez les selections et generez les bons de commande par fournisseur</p>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Chargement des selections...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-container">
+      <p class="error">{{ error() }}</p>
+      <button class="btn btn-primary" (click)="loadDashboard()">Reessayer</button>
+    </div>
+  } @else if (dashboard()) {
+    <!-- Stats Overview -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value">{{ dashboard()!.total_fournisseurs }}</div>
+        <div class="stat-label">Fournisseur(s)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ dashboard()!.total_articles }}</div>
+        <div class="stat-label">Article(s) selectionne(s)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ dashboard()!.total_das }}</div>
+        <div class="stat-label">DA concernee(s)</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-value">{{ formatMontant(dashboard()!.montant_global_ht) }}</div>
+        <div class="stat-label">Montant total HT (MAD)</div>
+      </div>
+    </div>
+
+    @if (dashboard()!.fournisseurs.length === 0) {
+      <div class="empty-state">
+        <p>Aucune selection en attente.</p>
+        <p>Retournez a la comparaison pour selectionner des offres.</p>
+        <button class="btn btn-primary" (click)="retourComparaison()">
+          Aller a la comparaison
+        </button>
+      </div>
+    } @else {
+      <!-- Fournisseurs Grid -->
+      <div class="fournisseurs-grid">
+        @for (fournisseur of dashboard()!.fournisseurs; track fournisseur.code_fournisseur) {
+          <div class="fournisseur-card">
+            <div class="fournisseur-header">
+              <div class="fournisseur-info">
+                <span class="nom">{{ fournisseur.nom_fournisseur }}</span>
+                <span class="code">{{ fournisseur.code_fournisseur }}</span>
+              </div>
+              <div class="fournisseur-stats">
+                <span class="articles-count">{{ fournisseur.nb_articles }} article(s)</span>
+                <span class="das-count">{{ fournisseur.nb_das }} DA</span>
+              </div>
+            </div>
+
+            <div class="fournisseur-das">
+              @for (da of fournisseur.das; track da) {
+                <span class="da-badge">{{ da }}</span>
+              }
+            </div>
+
+            <div class="fournisseur-montant">
+              <span class="label">Montant total HT</span>
+              <span class="value">{{ formatMontant(fournisseur.montant_total_ht) }} {{ fournisseur.devise }}</span>
+            </div>
+
+            <div class="fournisseur-contact">
+              @if (fournisseur.email) {
+                <span class="contact-item">{{ fournisseur.email }}</span>
+              }
+              @if (fournisseur.telephone) {
+                <span class="contact-item">{{ fournisseur.telephone }}</span>
+              }
+            </div>
+
+            <div class="fournisseur-actions">
+              <button
+                class="btn btn-secondary"
+                (click)="openFournisseurDetail(fournisseur)"
+              >
+                Voir detail
+              </button>
+              <button
+                class="btn btn-primary"
+                (click)="genererBC(fournisseur)"
+                [disabled]="countSelectedArticles(fournisseur.code_fournisseur) === 0 || generationLoading()"
+              >
+                @if (generationLoading() === fournisseur.code_fournisseur) {
+                  <span class="spinner-small"></span>
+                  Generation...
+                } @else {
+                  Generer BC ({{ countSelectedArticles(fournisseur.code_fournisseur) }})
+                }
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+
+  <!-- Modal Detail Fournisseur -->
+  @if (selectedFournisseur()) {
+    <div class="modal-overlay" (click)="closeDetail()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">
+            <h2>{{ selectedFournisseur()!.nom_fournisseur }}</h2>
+            <p>{{ selectedFournisseur()!.code_fournisseur }}</p>
+          </div>
+          <button class="btn-close" (click)="closeDetail()">&times;</button>
+        </div>
+
+        <!-- Resume -->
+        <div class="modal-summary">
+          <div class="summary-item">
+            <span class="label">Articles selectionnes</span>
+            <span class="value">{{ countSelectedArticles(selectedFournisseur()!.code_fournisseur) }} / {{ selectedFournisseur()!.nb_articles }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="label">Montant selectionne HT</span>
+            <span class="value">{{ formatMontant(calculateSelectedTotal(selectedFournisseur()!)) }} {{ selectedFournisseur()!.devise }}</span>
+          </div>
+        </div>
+
+        <!-- Bouton tout selectionner/deselectionner -->
+        <div class="modal-actions-top">
+          <button class="btn btn-sm btn-outline" (click)="toggleAllArticles(selectedFournisseur()!)">
+            @if (countSelectedArticles(selectedFournisseur()!.code_fournisseur) === selectedFournisseur()!.nb_articles) {
+              Tout deselectionner
+            } @else {
+              Tout selectionner
+            }
+          </button>
+        </div>
+
+        <!-- Liste des articles -->
+        <div class="articles-list">
+          @for (article of selectedFournisseur()!.articles; track article.id) {
+            <div
+              class="article-item"
+              [class.selected]="isArticleSelected(selectedFournisseur()!.code_fournisseur, article.id)"
+              (click)="toggleArticleSelection(selectedFournisseur()!.code_fournisseur, article.id)"
+            >
+              <div class="article-checkbox">
+                <input
+                  type="checkbox"
+                  [checked]="isArticleSelected(selectedFournisseur()!.code_fournisseur, article.id)"
+                  (click)="$event.stopPropagation()"
+                  (change)="toggleArticleSelection(selectedFournisseur()!.code_fournisseur, article.id)"
+                />
+              </div>
+              <div class="article-main">
+                <div class="article-code">{{ article.code_article }}</div>
+                <div class="article-designation">{{ article.designation || 'Sans designation' }}</div>
+                <div class="article-da">DA: {{ article.numero_da }}</div>
+              </div>
+              <div class="article-details">
+                <div class="detail-item">
+                  <span class="detail-label">Quantite</span>
+                  <span class="detail-value">{{ article.quantite }} {{ article.unite || '' }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Prix unit.</span>
+                  <span class="detail-value">{{ formatMontant(article.prix_unitaire) }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Montant</span>
+                  <span class="detail-value montant">{{ formatMontant(article.montant_ligne) }} {{ article.devise }}</span>
+                </div>
+              </div>
+              <div class="article-extra">
+                @if (article.marque_proposee) {
+                  <span class="marque" [class.conforme]="article.marque_conforme === true" [class.non-conforme]="article.marque_conforme === false">
+                    {{ article.marque_proposee }}
+                  </span>
+                }
+                @if (article.date_livraison) {
+                  <span class="livraison">Liv: {{ formatDate(article.date_livraison) }}</span>
+                }
+                @if (article.selection_auto) {
+                  <span class="auto-badge">Auto</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Actions -->
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeDetail()">Fermer</button>
+          <button
+            class="btn btn-primary"
+            (click)="genererBC(selectedFournisseur()!); closeDetail()"
+            [disabled]="countSelectedArticles(selectedFournisseur()!.code_fournisseur) === 0"
+          >
+            Generer BC ({{ countSelectedArticles(selectedFournisseur()!.code_fournisseur) }} articles)
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

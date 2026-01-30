@@ -44,6 +44,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/reponses/comparaison-dashboard.component').then(m => m.ComparaisonDashboardComponent)
       },
       {
+        path: 'pre-bon-commande',
+        loadComponent: () => import('./features/pre-bon-commande/pre-bon-commande.component').then(m => m.PreBonCommandeComponent)
+      },
+      {
         path: 'decision',
         loadComponent: () => import('./features/decision/decision.component').then(m => m.DecisionComponent)
       },
@@ -58,6 +62,10 @@ export const routes: Routes = [
       {
         path: 'bon-commande/:numeroBC',
         loadComponent: () => import('./features/bon-commande/bon-commande-detail.component').then(m => m.BonCommandeDetailComponent)
+      },
+      {
+        path: 'admin/users',
+        loadComponent: () => import('./features/admin/users/users.component').then(m => m.UsersComponent)
       },
       {
         path: '',

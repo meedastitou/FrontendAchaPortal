@@ -36,3 +36,21 @@ export interface UserCreate {
   prenom?: string;
   role: UserRole;
 }
+
+export interface UserUpdate {
+  email?: string;
+  nom?: string;
+  prenom?: string;
+  role?: UserRole;
+  actif?: boolean;
+}
+
+export interface UsersListResponse {
+  users: User[];
+  total: number;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
+  temp_password: string;
+}

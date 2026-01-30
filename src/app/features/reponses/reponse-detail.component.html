@@ -139,6 +139,7 @@
                 <th>N° DA</th>
                 <th>Code Article</th>
                 <th>Désignation</th>
+                <th>Tarif Réf.</th>
                 <th>Marque</th>
                 <th class="col-edit">Quantité</th>
                 <th class="col-edit">Prix Unit. HT</th>
@@ -159,6 +160,13 @@
                   <td class="da-number">{{ article.numero_da || '-' }}</td>
                   <td class="code">{{ article.code_article }}</td>
                   <td class="designation">{{ article.designation_article || '-' }}</td>
+                  <td class="tarif-ref">
+                    @if (article.tarif_reference) {
+                      {{ formatMontant(article.tarif_reference) }}
+                    } @else {
+                      <span class="no-data">-</span>
+                    }
+                  </td>
                   <td>
                     @if (article.marque_effective) {
                       <span [class.conforme]="article.marque_conforme" [class.non-conforme]="article.marque_conforme === false">
@@ -282,11 +290,13 @@
                   <th>N° DA</th>
                   <th>Code Article</th>
                   <th>Désignation</th>
+                  <th>Tarif Réf.</th>
                   <th>Prix Unit. HT</th>
-                  <th>Quantite dispo</th>
+                  <th>Qte dispo / demandée</th>
                   <th>Total HT</th>
                   <th>Delai livraison</th>
-                  <th>Marque</th>
+                  <th>Marque demandée</th>
+                  <th>Marque proposée</th>
                   <th>Commentaire</th>
                 </tr>
               </thead>
@@ -296,14 +306,27 @@
                     <td class="da-number">{{ detail.numero_da || '-' }}</td>
                     <td class="code">{{ detail.code_article }}</td>
                     <td class="designation">{{ detail.designation_article || '-' }}</td>
-                    <td class="price">
+                    <td class="price tarif-ref">
+                      @if (detail.tarif_reference) {
+                        {{ formatMontant(detail.tarif_reference) }} {{ reponse()!.entete.devise }}
+                      } @else {
+                        <span class="no-data">-</span>
+                      }
+                    </td>
+                    <td class="price" [class.prix-depasse]="detail.prix_unitaire_ht && detail.tarif_reference && detail.prix_unitaire_ht > detail.tarif_reference">
                       @if (detail.prix_unitaire_ht) {
                         {{ formatMontant(detail.prix_unitaire_ht) }} {{ reponse()!.entete.devise }}
                       } @else {
                         <span class="no-data">-</span>
                       }
                     </td>
-                    <td>{{ detail.quantite_disponible || '-' }}</td>
+                    <td class="qty-col">
+                      <span class="qty-dispo" [class.qty-ok]="detail.quantite_disponible && detail.quantite_demandee && detail.quantite_disponible >= detail.quantite_demandee" [class.qty-low]="detail.quantite_disponible && detail.quantite_demandee && detail.quantite_disponible < detail.quantite_demandee">
+                        {{ detail.quantite_disponible || '-' }}
+                      </span>
+                      <span class="qty-separator">/</span>
+                      <span class="qty-demandee">{{ detail.quantite_demandee || '-' }}</span>
+                    </td>
                     <td class="total">
                       @if (detail.prix_unitaire_ht && detail.quantite_disponible) {
                         {{ formatMontant(detail.prix_unitaire_ht * detail.quantite_disponible) }} {{ reponse()!.entete.devise }}
@@ -318,11 +341,12 @@
                         -
                       }
                     </td>
+                    <td class="marque-demandee">{{ detail.marque_demandee || '-' }}</td>
                     <td>
-                      @if (detail.marque_conforme !== null) {
-                        <span [class.conforme]="detail.marque_conforme" [class.non-conforme]="!detail.marque_conforme">
-                          {{ detail.marque_conforme ? detail.marque_demandee : detail.marque_proposee }}
-                        </span>
+                      @if (detail.marque_conforme === true) {
+                        <span class="badge conforme">Conforme</span>
+                      } @else if (detail.marque_conforme === false) {
+                        <span class="badge non-conforme">{{ detail.marque_proposee || 'Non conforme' }}</span>
                       } @else {
                         {{ detail.marque_proposee || '-' }}
                       }
@@ -333,9 +357,9 @@
               </tbody>
               <tfoot>
                 <tr>
-                  <td colspan="5" class="total-label">Total HT</td>
+                  <td colspan="6" class="total-label">Total HT</td>
                   <td class="total-value">{{ formatMontant(getMontantTotal()) }} {{ reponse()!.entete.devise }}</td>
-                  <td colspan="3"></td>
+                  <td colspan="4"></td>
                 </tr>
               </tfoot>
             </table>

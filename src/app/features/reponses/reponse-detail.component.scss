@@ -287,6 +287,19 @@
   .price {
     font-weight: 600;
     color: #059669;
+
+    &.prix-depasse {
+      color: #dc2626;
+      background: #fef2f2;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+  }
+
+  .tarif-ref {
+    font-weight: 500;
+    color: #6b7280;
+    font-style: italic;
   }
 
   .total {
@@ -323,6 +336,58 @@
     font-weight: 500;
     color: #6366f1;
     white-space: nowrap;
+  }
+
+  /* Quantity Column */
+  .qty-col {
+    white-space: nowrap;
+
+    .qty-dispo {
+      font-weight: 600;
+      color: #1f2937;
+
+      &.qty-ok {
+        color: #059669;
+      }
+
+      &.qty-low {
+        color: #dc2626;
+      }
+    }
+
+    .qty-separator {
+      margin: 0 4px;
+      color: #9ca3af;
+    }
+
+    .qty-demandee {
+      font-size: 12px;
+      color: #6b7280;
+    }
+  }
+
+  /* Brand Columns */
+  .marque-demandee {
+    color: #7c3aed;
+    font-weight: 500;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+
+    &.conforme {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+
+    &.non-conforme {
+      background: #fee2e2;
+      color: #dc2626;
+    }
   }
 
   tfoot {

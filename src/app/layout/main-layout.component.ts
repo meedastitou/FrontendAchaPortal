@@ -59,7 +59,14 @@ import { AuthService } from '../core/services/auth.service';
             }
           </a>
 
-          <a routerLink="/decision" routerLinkActive="active" class="nav-item highlight">
+          <a routerLink="/pre-bon-commande" routerLinkActive="active" class="nav-item highlight">
+            <span class="nav-icon">P</span>
+            @if (!sidebarCollapsed) {
+              <span class="nav-text">Pre-BC</span>
+            }
+          </a>
+
+          <a routerLink="/decision" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">V</span>
             @if (!sidebarCollapsed) {
               <span class="nav-text">Decisions</span>
@@ -72,6 +79,16 @@ import { AuthService } from '../core/services/auth.service';
               <span class="nav-text">Bons Commande</span>
             }
           </a>
+
+          @if (authService.currentUser()?.role === 'admin') {
+            <div class="nav-divider"></div>
+            <a routerLink="/admin/users" routerLinkActive="active" class="nav-item admin-item">
+              <span class="nav-icon">U</span>
+              @if (!sidebarCollapsed) {
+                <span class="nav-text">Utilisateurs</span>
+              }
+            </a>
+          }
         </nav>
 
         <div class="sidebar-footer">
@@ -240,6 +257,26 @@ import { AuthService } from '../core/services/auth.service';
 
     .nav-text {
       font-size: 14px;
+    }
+
+    .nav-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.1);
+      margin: 12px 16px;
+    }
+
+    .nav-item.admin-item {
+      color: rgba(251, 191, 36, 0.8);
+    }
+
+    .nav-item.admin-item:hover {
+      background: rgba(251, 191, 36, 0.15);
+      color: #fbbf24;
+    }
+
+    .nav-item.admin-item.active {
+      background: rgba(251, 191, 36, 0.25);
+      color: #fbbf24;
     }
 
     /* Sidebar Footer */
