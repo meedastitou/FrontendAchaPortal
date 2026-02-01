@@ -57,9 +57,9 @@ import { ReponseComplete } from '../../core/models';
               @for (r of reponses(); track r.entete.id) {
                 <tr>
                   <td>
-                    <a [routerLink]="['/rfq', 'uuid', r.entete.rfq_uuid]" class="code-link">
-                      {{ r.numero_rfq }}
-                    </a>
+                    <!-- <a [routerLink]="['/rfq', r.entete.id]" class="code-link"> -->
+                    <span class="rfq-number">{{ r.numero_rfq }}</span>
+                    <!-- </a> -->
                   </td>
                   <td>
                     <div class="fournisseur-cell">
@@ -76,11 +76,11 @@ import { ReponseComplete } from '../../core/models';
                       <a [routerLink]="['/reponses', r.entete.id]" class="btn-icon" title="Voir details">
                         V
                       </a>
-                      @if (r.entete.fichier_devis_url) {
+                      <!-- @if (r.entete.fichier_devis_url) {
                         <a [href]="r.entete.fichier_devis_url" target="_blank" class="btn-icon" title="Voir devis">
                           D
                         </a>
-                      }
+                      } -->
                     </div>
                   </td>
                 </tr>
@@ -212,7 +212,12 @@ import { ReponseComplete } from '../../core/models';
     .code-link:hover {
       text-decoration: underline;
     }
+    .rfq-number{
+      color: #2d5a87;
+      font-weight: 500;
+      text-decoration: none;
 
+    }
     .fournisseur-cell {
       display: flex;
       flex-direction: column;

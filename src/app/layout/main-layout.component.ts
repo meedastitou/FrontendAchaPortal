@@ -66,12 +66,12 @@ import { AuthService } from '../core/services/auth.service';
             }
           </a>
 
-          <a routerLink="/decision" routerLinkActive="active" class="nav-item">
+          <!-- <a routerLink="/decision" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">V</span>
             @if (!sidebarCollapsed) {
               <span class="nav-text">Decisions</span>
             }
-          </a>
+          </a> -->
 
           <a routerLink="/bon-commande" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">B</span>

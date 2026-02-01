@@ -47,10 +47,10 @@ export const routes: Routes = [
         path: 'pre-bon-commande',
         loadComponent: () => import('./features/pre-bon-commande/pre-bon-commande.component').then(m => m.PreBonCommandeComponent)
       },
-      {
-        path: 'decision',
-        loadComponent: () => import('./features/decision/decision.component').then(m => m.DecisionComponent)
-      },
+      // {
+      //   path: 'decision',
+      //   loadComponent: () => import('./features/decision/decision.component').then(m => m.DecisionComponent)
+      // },
       {
         path: 'bon-commande',
         loadComponent: () => import('./features/bon-commande/bon-commande-list.component').then(m => m.BonCommandeListComponent)
