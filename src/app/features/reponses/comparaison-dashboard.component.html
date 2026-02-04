@@ -181,6 +181,41 @@
           }
         </div>
 
+        <!-- Dernière réception X3 -->
+        <div class="derniere-reception-section">
+          <h4>Dernière réception (Sage X3)</h4>
+          @if (derniereReceptionLoading()) {
+            <div class="reception-loading">
+              <span class="spinner-small"></span>
+              Chargement...
+            </div>
+          } @else if (derniereReceptionError()) {
+            <div class="reception-empty">
+              {{ derniereReceptionError() }}
+            </div>
+          } @else if (derniereReception()) {
+            <div class="reception-card">
+              <div class="reception-item">
+                <span class="reception-label">Fournisseur:</span>
+                <span class="reception-value fournisseur">
+                  {{ derniereReception()!.nom_fournisseur || derniereReception()!.code_fournisseur }}
+                  @if (derniereReception()!.nom_fournisseur) {
+                    <span class="code-small">({{ derniereReception()!.code_fournisseur }})</span>
+                  }
+                </span>
+              </div>
+              <div class="reception-item">
+                <span class="reception-label">Prix:</span>
+                <span class="reception-value prix">{{ formatMontant(derniereReception()!.prix) }} {{ derniereReception()!.devise }}</span>
+              </div>
+              <div class="reception-item">
+                <span class="reception-label">Date:</span>
+                <span class="reception-value">{{ formatDate(derniereReception()!.date_reception) }}</span>
+              </div>
+            </div>
+          }
+        </div>
+
         <!-- Analyse -->
         <div class="analyse-section">
           @if (selectedArticle()!.tarif_reference) {

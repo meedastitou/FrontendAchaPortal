@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ReponseService } from '../../core/services/reponse.service';
 import { SelectionService } from '../../core/services/selection.service';
+import { X3Service, DerniereReception } from '../../core/services/x3.service';
 import { ArticleDashboard, ComparaisonDashboardResponse, SelectionArticle, OffreDashboard } from '../../core/models';
 
 @Component({
@@ -22,6 +23,11 @@ export class ComparaisonDashboardComponent implements OnInit {
   dashboard = signal<ComparaisonDashboardResponse | null>(null);
   searchTerm = signal('');
   selectedArticle = signal<ArticleDashboard | null>(null);
+
+  // Dernière réception X3
+  derniereReception = signal<DerniereReception | null>(null);
+  derniereReceptionLoading = signal(false);
+  derniereReceptionError = signal<string | null>(null);
 
   // Map des selections existantes: key = "code_article|numero_da"
   selectionsMap = signal<Map<string, SelectionArticle>>(new Map());
@@ -47,6 +53,7 @@ export class ComparaisonDashboardComponent implements OnInit {
   constructor(
     private reponseService: ReponseService,
     private selectionService: SelectionService,
+    private x3Service: X3Service,
     private router: Router
   ) {}
 
@@ -210,6 +217,25 @@ export class ComparaisonDashboardComponent implements OnInit {
 
   selectArticle(article: ArticleDashboard): void {
     this.selectedArticle.set(article);
+    this.loadDerniereReception(article.code_article);
+  }
+
+  loadDerniereReception(codeArticle: string): void {
+    this.derniereReception.set(null);
+    this.derniereReceptionError.set(null);
+    this.derniereReceptionLoading.set(true);
+
+    this.x3Service.getDerniereReception(codeArticle).subscribe({
+      next: (data) => {
+        this.derniereReception.set(data);
+        this.derniereReceptionLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Error loading derniere reception:', err);
+        this.derniereReceptionError.set('Aucune réception trouvée dans X3');
+        this.derniereReceptionLoading.set(false);
+      }
+    });
   }
 
   closeDetail(): void {

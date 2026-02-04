@@ -458,6 +458,75 @@
   }
 }
 
+/* Dernière Réception X3 Section */
+.derniere-reception-section {
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border-bottom: 1px solid #f59e0b;
+
+  h4 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #92400e;
+  }
+}
+
+.reception-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #92400e;
+}
+
+.reception-empty {
+  font-size: 13px;
+  color: #92400e;
+  font-style: italic;
+}
+
+.reception-card {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 12px 16px;
+  border-radius: 8px;
+}
+
+.reception-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .reception-label {
+    font-size: 12px;
+    color: #92400e;
+  }
+
+  .reception-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #78350f;
+
+    &.fournisseur {
+      color: #1e40af;
+    }
+
+    &.prix {
+      color: #059669;
+      font-size: 16px;
+    }
+
+    .code-small {
+      font-size: 11px;
+      color: #6b7280;
+      font-weight: normal;
+    }
+  }
+}
+
 /* Analyse Section */
 .analyse-section {
   padding: 20px 24px;
