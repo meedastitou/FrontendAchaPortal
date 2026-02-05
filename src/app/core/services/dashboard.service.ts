@@ -5,6 +5,7 @@ import { environment } from '../../../environments/environment';
 import {
   DashboardStats,
   DashboardStatsDetailed,
+  TodayStats,
   RFQStatusChart,
   RecentActivity,
   TopFournisseur,
@@ -26,6 +27,14 @@ export class DashboardService {
 
   getDetailedStats(): Observable<DashboardStatsDetailed> {
     return this.http.get<DashboardStatsDetailed>(`${this.API_URL}/stats/detailed`);
+  }
+
+  getTodayStats(filterDate?: string): Observable<TodayStats> {
+    let url = `${this.API_URL}/stats/today`;
+    if (filterDate) {
+      url += `?filter_date=${filterDate}`;
+    }
+    return this.http.get<TodayStats>(url);
   }
 
   getRFQStatusChart(): Observable<RFQStatusChart> {

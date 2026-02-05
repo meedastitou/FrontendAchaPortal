@@ -8,7 +8,8 @@ import {
   RecentActivity,
   TopFournisseur,
   AlertItem,
-  RecentReponse
+  RecentReponse,
+  TodayStats
 } from '../../core/models';
 
 @Component({
@@ -20,6 +21,8 @@ import {
 })
 export class DashboardComponent implements OnInit {
   stats = signal<DashboardStats | null>(null);
+  todayStats = signal<TodayStats | null>(null);
+  selectedDate = signal<string>('');
   rfqStatus = signal<RFQStatusChart | null>(null);
   activities = signal<RecentActivity[]>([]);
   topFournisseurs = signal<TopFournisseur[]>([]);
@@ -40,6 +43,8 @@ export class DashboardComponent implements OnInit {
       next: (data) => this.stats.set(data),
       error: (err) => console.error('Error loading stats:', err)
     });
+
+    this.loadTodayStats();
 
     this.dashboardService.getRFQStatusChart().subscribe({
       next: (data) => {
@@ -117,5 +122,28 @@ export class DashboardComponent implements OnInit {
     const days = Math.floor(hours / 24);
     if (days < 7) return `Il y a ${days}j`;
     return date.toLocaleDateString('fr-FR');
+  }
+
+  loadTodayStats(): void {
+    const dateFilter = this.selectedDate() || undefined;
+    this.dashboardService.getTodayStats(dateFilter).subscribe({
+      next: (data) => this.todayStats.set(data),
+      error: (err) => console.error('Error loading today stats:', err)
+    });
+  }
+
+  onDateChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.selectedDate.set(input.value);
+    this.loadTodayStats();
+  }
+
+  resetToToday(): void {
+    this.selectedDate.set('');
+    this.loadTodayStats();
+  }
+
+  isToday(): boolean {
+    return !this.selectedDate();
   }
 }

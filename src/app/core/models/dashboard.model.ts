@@ -16,6 +16,17 @@ export interface DashboardStatsDetailed extends DashboardStats {
   delai_moyen_reponse_heures: number;
 }
 
+export interface TodayStats {
+  date: string;
+  rfq_envoyees: number;
+  reponses_recues: number;
+  rejets_recus: number;
+  commandes_creees: number;
+  // montant_reponses: number;
+  nouveaux_fournisseurs: number;
+  articles_cotes: number;
+}
+
 export interface RFQStatusChart {
   envoye: number;
   vu: number;
