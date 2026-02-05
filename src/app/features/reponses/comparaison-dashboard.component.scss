@@ -423,8 +423,51 @@
 
   .modal-das {
     display: flex;
-    gap: 6px;
+    gap: 8px;
     flex-wrap: wrap;
+  }
+
+  .da-with-signature {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .sig-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+
+    &.sig-oui {
+      background: #dcfce7;
+      color: #059669;
+    }
+
+    &.sig-partiel {
+      background: #fef3c7;
+      color: #b45309;
+    }
+
+    &.sig-non {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    &.sig-na {
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+
+    &.sig-unknown {
+      background: #e5e7eb;
+      color: #6b7280;
+    }
+
+    &.sig-loading {
+      background: #e5e7eb;
+      color: #9ca3af;
+    }
   }
 
   .btn-close {

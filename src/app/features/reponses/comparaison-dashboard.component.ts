@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ReponseService } from '../../core/services/reponse.service';
 import { SelectionService } from '../../core/services/selection.service';
-import { X3Service, DerniereReception } from '../../core/services/x3.service';
+import { X3Service, DerniereReception, StatutSignature } from '../../core/services/x3.service';
 import { ArticleDashboard, ComparaisonDashboardResponse, SelectionArticle, OffreDashboard } from '../../core/models';
 
 @Component({
@@ -28,6 +28,10 @@ export class ComparaisonDashboardComponent implements OnInit {
   derniereReception = signal<DerniereReception | null>(null);
   derniereReceptionLoading = signal(false);
   derniereReceptionError = signal<string | null>(null);
+
+  // Statuts de signature par DA: Map<numero_da, StatutSignature>
+  signaturesMap = signal<Map<string, StatutSignature>>(new Map());
+  signaturesLoading = signal(false);
 
   // Map des selections existantes: key = "code_article|numero_da"
   selectionsMap = signal<Map<string, SelectionArticle>>(new Map());
@@ -218,6 +222,7 @@ export class ComparaisonDashboardComponent implements OnInit {
   selectArticle(article: ArticleDashboard): void {
     this.selectedArticle.set(article);
     this.loadDerniereReception(article.code_article);
+    this.loadSignatures(article);
   }
 
   loadDerniereReception(codeArticle: string): void {
@@ -236,6 +241,53 @@ export class ComparaisonDashboardComponent implements OnInit {
         this.derniereReceptionLoading.set(false);
       }
     });
+  }
+
+  loadSignatures(article: ArticleDashboard): void {
+    this.signaturesMap.set(new Map());
+    this.signaturesLoading.set(true);
+
+    // Construire la liste des paires DA/Article
+    const items = article.das.map(da => ({
+      numero_da: da,
+      code_article: article.code_article
+    }));
+
+    if (items.length === 0) {
+      this.signaturesLoading.set(false);
+      return;
+    }
+
+    this.x3Service.getStatutsSignaturesBulk(items).subscribe({
+      next: (response) => {
+        const map = new Map<string, StatutSignature>();
+        for (const sig of response.signatures) {
+          map.set(sig.numero_da, sig);
+        }
+        this.signaturesMap.set(map);
+        this.signaturesLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Error loading signatures:', err);
+        this.signaturesLoading.set(false);
+      }
+    });
+  }
+
+  getSignatureStatus(numeroDA: string): string {
+    const sig = this.signaturesMap().get(numeroDA);
+    return sig?.statut_signature || 'N/A';
+  }
+
+  getSignatureClass(numeroDA: string): string {
+    const status = this.getSignatureStatus(numeroDA);
+    switch (status) {
+      case 'Oui': return 'sig-oui';
+      case 'Partiellement': return 'sig-partiel';
+      case 'Non': return 'sig-non';
+      case 'Pas de gestion': return 'sig-na';
+      default: return 'sig-unknown';
+    }
   }
 
   closeDetail(): void {

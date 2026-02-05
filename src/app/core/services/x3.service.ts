@@ -19,6 +19,17 @@ export interface HistoriqueReception {
   total: number;
 }
 
+export interface StatutSignature {
+  numero_da: string;
+  code_article: string;
+  flag_signature: number | null;
+  statut_signature: string;
+}
+
+export interface StatutSignatureBulkResponse {
+  signatures: StatutSignature[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -41,6 +52,25 @@ export class X3Service {
     return this.http.get<HistoriqueReception>(
       `${this.API_URL}/receptions/historique/${codeArticle}`,
       { params: { limit: limit.toString() } }
+    );
+  }
+
+  /**
+   * Vérifier le statut de signature d'un article dans une DA
+   */
+  getStatutSignature(numeroDA: string, codeArticle: string): Observable<StatutSignature> {
+    return this.http.get<StatutSignature>(`${this.API_URL}/signature/${numeroDA}/${codeArticle}`);
+  }
+
+  /**
+   * Vérifier le statut de signature pour plusieurs articles/DA en une seule requête
+   * @param items Liste de paires {numero_da, code_article}
+   */
+  getStatutsSignaturesBulk(items: { numero_da: string; code_article: string }[]): Observable<StatutSignatureBulkResponse> {
+    const articlesParam = items.map(i => `${i.numero_da}:${i.code_article}`).join(',');
+    return this.http.get<StatutSignatureBulkResponse>(
+      `${this.API_URL}/signatures/bulk`,
+      { params: { articles: articlesParam } }
     );
   }
 }

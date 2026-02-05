@@ -169,7 +169,16 @@
             <p>{{ selectedArticle()!.designation || 'Sans designation' }}</p>
             <div class="modal-das">
               @for (da of selectedArticle()!.das; track da) {
-                <span class="da-badge">{{ da }}</span>
+                <div class="da-with-signature">
+                  <span class="da-badge">{{ da }}</span>
+                  @if (signaturesLoading()) {
+                    <span class="sig-badge sig-loading">...</span>
+                  } @else {
+                    <span class="sig-badge" [class]="getSignatureClass(da)" [title]="'Signature: ' + getSignatureStatus(da)">
+                      {{ getSignatureStatus(da) }}
+                    </span>
+                  }
+                </div>
               }
             </div>
           </div>
