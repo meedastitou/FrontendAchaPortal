@@ -105,6 +105,12 @@ export interface OffreDashboard {
   date_reponse: string;
 }
 
+export interface FournisseurEnAttente {
+  code_fournisseur: string;
+  nom_fournisseur: string;
+  date_envoi: string;
+}
+
 export interface ArticleDashboard {
   code_article: string;
   designation: string | null;
@@ -113,6 +119,7 @@ export interface ArticleDashboard {
   quantite_demandee: number;
   das: string[];
   offres: OffreDashboard[];
+  fournisseurs_en_attente: FournisseurEnAttente[];
   analyse: ComparaisonAnalyse;
 }
 

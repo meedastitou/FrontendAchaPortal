@@ -77,9 +77,17 @@
               <span class="code">{{ article.code_article }}</span>
               <span class="designation">{{ article.designation || 'Sans designation' }}</span>
             </div>
-            <div class="offres-count">
-              <span class="count">{{ article.analyse.nb_offres }}</span>
-              <span class="label">offre(s)</span>
+            <div class="offres-counts">
+              <div class="offres-count">
+                <span class="count">{{ article.analyse.nb_offres }}</span>
+                <span class="label">reponse(s)</span>
+              </div>
+              @if (article.fournisseurs_en_attente && article.fournisseurs_en_attente.length > 0) {
+                <div class="offres-count attente">
+                  <span class="count">{{ article.fournisseurs_en_attente.length }}</span>
+                  <span class="label">en attente</span>
+                </div>
+              }
             </div>
           </div>
 
@@ -326,6 +334,30 @@
             </table>
           </div>
         </div>
+
+        <!-- Fournisseurs en attente -->
+        @if (selectedArticle()!.fournisseurs_en_attente && selectedArticle()!.fournisseurs_en_attente.length > 0) {
+          <div class="attente-section">
+            <h3>Fournisseurs en attente de reponse ({{ selectedArticle()!.fournisseurs_en_attente.length }})</h3>
+            <div class="attente-list">
+              @for (fa of selectedArticle()!.fournisseurs_en_attente; track fa.code_fournisseur) {
+                <div class="attente-item">
+                  <div class="attente-fournisseur">
+                    <span class="attente-nom">{{ fa.nom_fournisseur }}</span>
+                    <span class="attente-code">{{ fa.code_fournisseur }}</span>
+                  </div>
+                  <div class="attente-date">
+                    <span class="attente-label">Envoyee le:</span>
+                    <span class="attente-value">{{ formatDate(fa.date_envoi) }}</span>
+                  </div>
+                  <div class="attente-status">
+                    <span class="status-badge pending">En attente</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
 
         <!-- Recommandation -->
         <div class="recommandation-section">
