@@ -22,6 +22,8 @@ export class RFQService {
     if (filters.date_debut) params = params.set('date_debut', filters.date_debut);
     if (filters.date_fin) params = params.set('date_fin', filters.date_fin);
     if (filters.search) params = params.set('search', filters.search);
+    if (filters.code_article) params = params.set('code_article', filters.code_article);
+    if (filters.numero_da) params = params.set('numero_da', filters.numero_da);
 
     return this.http.get<RFQListResponse>(this.API_URL, { params });
   }

@@ -17,6 +17,26 @@
       </div>
 
       <div class="filter-group">
+        <label>Code Article</label>
+        <input
+          type="text"
+          placeholder="Code article..."
+          [(ngModel)]="filters.code_article"
+          (input)="onSearch()"
+        />
+      </div>
+
+      <div class="filter-group">
+        <label>N DA</label>
+        <input
+          type="text"
+          placeholder="Numero DA..."
+          [(ngModel)]="filters.numero_da"
+          (input)="onSearch()"
+        />
+      </div>
+
+      <div class="filter-group">
         <label>Statut</label>
         <select [(ngModel)]="filters.statut" (change)="loadRFQs()">
           <option [ngValue]="undefined">Tous</option>
@@ -80,7 +100,7 @@
             <th>Date envoi</th>
             <th>Statut</th>
             <th>Relances</th>
-            <th>Articles</th>
+            <th>Articles consultes</th>
             <th>Reponse</th>
             <th>Actions</th>
           </tr>
@@ -110,7 +130,23 @@
                   {{ rfq.nb_relances }}/3
                 </span>
               </td>
-              <td>{{ rfq.lignes?.length || 0 }}</td>
+              <td class="articles-cell">
+                @if (rfq.lignes && rfq.lignes.length > 0) {
+                  <div class="articles-list">
+                    @for (ligne of rfq.lignes.slice(0, 3); track ligne.id) {
+                      <div class="article-item">
+                        <span class="article-code">{{ ligne.code_article }}</span>
+                        <span class="article-da">DA: {{ ligne.numero_da }}</span>
+                      </div>
+                    }
+                    @if (rfq.lignes.length > 3) {
+                      <span class="articles-more">+{{ rfq.lignes.length - 3 }} autres</span>
+                    }
+                  </div>
+                } @else {
+                  <span class="no-articles">-</span>
+                }
+              </td>
               <td>
                 @if (rfq.date_reponse) {
                   <span class="date-reponse">{{ rfq.date_reponse | date:'dd/MM/yyyy' }}</span>
@@ -123,11 +159,6 @@
                   <a [routerLink]="['/rfq', rfq.id]" class="btn-icon" title="Voir details">
                     V
                   </a>
-                  <!-- @if (rfq.statut === 'repondu') {
-                    <a [routerLink]="['/reponses', 'rfq', rfq.uuid]" class="btn-icon success" title="Voir offre">
-                      O
-                    </a>
-                  } -->
                 </div>
               </td>
             </tr>

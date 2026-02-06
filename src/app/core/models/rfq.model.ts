@@ -50,4 +50,6 @@ export interface RFQFilters {
   date_debut?: string;
   date_fin?: string;
   search?: string;
+  code_article?: string;
+  numero_da?: string;
 }

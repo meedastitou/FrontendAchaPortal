@@ -256,6 +256,49 @@
   cursor: not-allowed;
 }
 
+/* Articles Cell */
+.articles-cell {
+  max-width: 280px;
+}
+
+.articles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.article-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  background: #f3f4f6;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.article-code {
+  font-weight: 600;
+  color: #2d5a87;
+  font-family: monospace;
+}
+
+.article-da {
+  color: #6b7280;
+  font-size: 11px;
+}
+
+.articles-more {
+  font-size: 11px;
+  color: #6b7280;
+  font-style: italic;
+  padding-left: 8px;
+}
+
+.no-articles {
+  color: #9ca3af;
+}
+
 .loading, .empty {
   padding: 60px;
   text-align: center;
