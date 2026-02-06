@@ -103,6 +103,7 @@ export interface OffreDashboard {
   marque_proposee: string | null;
   devise: string;
   date_reponse: string;
+  methodes_paiement: string | null;
 }
 
 export interface FournisseurEnAttente {

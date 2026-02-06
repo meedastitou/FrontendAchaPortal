@@ -275,6 +275,7 @@
                   <th>Qte dispo / demandee</th>
                   <th>Date livraison</th>
                   <th>Marque proposee</th>
+                  <th>Paiement</th>
                   <th class="action-col">Actions</th>
                 </tr>
               </thead>
@@ -313,6 +314,13 @@
                         <span class="badge non-conforme">{{ offre.marque_proposee || 'Non conforme' }}</span>
                       } @else {
                         <span>{{ offre.marque_proposee || '-' }}</span>
+                      }
+                    </td>
+                    <td class="paiement-col">
+                      @if (offre.methodes_paiement) {
+                        <span class="paiement-badge">{{ offre.methodes_paiement }}</span>
+                      } @else {
+                        <span class="paiement-empty">-</span>
                       }
                     </td>
                     <td class="action-col">

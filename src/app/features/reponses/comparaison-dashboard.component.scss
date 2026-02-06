@@ -1040,6 +1040,26 @@
   }
 }
 
+/* Payment Column */
+.paiement-col {
+  min-width: 100px;
+  white-space: nowrap;
+}
+
+.paiement-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #eff6ff;
+  color: #2563eb;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.paiement-empty {
+  color: #9ca3af;
+}
+
 /* Table Action Column */
 .action-col {
   min-width: 150px;
