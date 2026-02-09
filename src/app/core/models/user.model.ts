@@ -54,3 +54,19 @@ export interface ResetPasswordResponse {
   message: string;
   temp_password: string;
 }
+
+export interface Famille {
+  code_famille: string;
+  nom_famille: string;
+}
+
+export interface UserFamillesResponse {
+  user_id: number;
+  username: string;
+  familles: Famille[];
+}
+
+export interface FamillesListResponse {
+  familles: Famille[];
+  total: number;
+}

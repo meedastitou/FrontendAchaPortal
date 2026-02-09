@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { User, UserCreate, UserUpdate, UsersListResponse, ResetPasswordResponse } from '../models';
+import { User, UserCreate, UserUpdate, UsersListResponse, ResetPasswordResponse, UserFamillesResponse, FamillesListResponse } from '../models';
 
 @Injectable({
   providedIn: 'root'
@@ -65,5 +65,29 @@ export class UserService {
    */
   delete(id: number): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.apiUrl}/users/${id}`);
+  }
+
+  /**
+   * Obtenir les familles d'un utilisateur (Admin only)
+   */
+  getUserFamilles(userId: number): Observable<UserFamillesResponse> {
+    return this.http.get<UserFamillesResponse>(`${this.apiUrl}/users/${userId}/familles`);
+  }
+
+  /**
+   * Definir les familles d'un utilisateur (Admin only)
+   */
+  setUserFamilles(userId: number, familles: string[]): Observable<{ message: string; user_id: number; familles: string[] }> {
+    return this.http.put<{ message: string; user_id: number; familles: string[] }>(
+      `${this.apiUrl}/users/${userId}/familles`,
+      familles
+    );
+  }
+
+  /**
+   * Lister toutes les familles disponibles (Admin only)
+   */
+  getAllFamilles(): Observable<FamillesListResponse> {
+    return this.http.get<FamillesListResponse>(`${this.apiUrl}/familles`);
   }
 }
