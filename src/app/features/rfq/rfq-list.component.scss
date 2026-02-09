@@ -67,6 +67,24 @@
   color: #374151;
 }
 
+.btn-export {
+  background: linear-gradient(135deg, #059669, #047857);
+  color: white;
+
+  &:hover {
+    background: linear-gradient(135deg, #047857, #065f46);
+  }
+}
+
+.btn-export-filtered {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+
+  &:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  }
+}
+
 /* Quick Stats */
 .quick-stats {
   display: flex;

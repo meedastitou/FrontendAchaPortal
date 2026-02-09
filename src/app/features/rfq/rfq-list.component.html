@@ -62,6 +62,12 @@
       <button class="btn btn-secondary" (click)="resetFilters()">
         Reinitialiser
       </button>
+      <button class="btn btn-export-filtered" (click)="exportFiltered()" title="Exporter selon les filtres appliques (Excel)">
+        Exporter
+      </button>
+      <button class="btn btn-export" (click)="exportSansReponse()" title="Exporter les RFQ sans reponse (Excel)">
+        Exporter sans reponse
+      </button>
     </div>
   </div>
 

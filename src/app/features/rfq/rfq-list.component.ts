@@ -109,4 +109,15 @@ export class RFQListComponent implements OnInit {
     };
     return map[statut] || statut;
   }
+
+  exportSansReponse(): void {
+    this.rfqService.exportSansReponse(
+      this.filters.date_debut || undefined,
+      this.filters.date_fin || undefined
+    );
+  }
+
+  exportFiltered(): void {
+    this.rfqService.exportFiltered(this.filters);
+  }
 }

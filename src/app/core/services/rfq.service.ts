@@ -48,4 +48,87 @@ export class RFQService {
       { params: { days_old: daysOld.toString() } }
     );
   }
+
+  exportSansReponse(dateDebut?: string, dateFin?: string): void {
+    let params = new HttpParams();
+
+    if (dateDebut) {
+      params = params.set('date_debut', dateDebut);
+    }
+    if (dateFin) {
+      params = params.set('date_fin', dateFin);
+    }
+
+    this.http.get(`${this.API_URL}/export/sans-reponse`, {
+      params,
+      responseType: 'blob',
+      observe: 'response'
+    }).subscribe({
+      next: (response) => {
+        this.downloadFile(response, 'rfq_sans_reponse.xlsx');
+      },
+      error: (err) => {
+        console.error('Erreur export:', err);
+      }
+    });
+  }
+
+  exportFiltered(filters: RFQFilters): void {
+    let params = new HttpParams();
+
+    if (filters.statut) {
+      params = params.set('statut', filters.statut);
+    }
+    if (filters.date_debut) {
+      params = params.set('date_debut', filters.date_debut);
+    }
+    if (filters.date_fin) {
+      params = params.set('date_fin', filters.date_fin);
+    }
+    if (filters.search) {
+      params = params.set('search', filters.search);
+    }
+    if (filters.code_article) {
+      params = params.set('code_article', filters.code_article);
+    }
+    if (filters.numero_da) {
+      params = params.set('numero_da', filters.numero_da);
+    }
+    if (filters.code_fournisseur) {
+      params = params.set('code_fournisseur', filters.code_fournisseur);
+    }
+
+    this.http.get(`${this.API_URL}/export/filtered`, {
+      params,
+      responseType: 'blob',
+      observe: 'response'
+    }).subscribe({
+      next: (response) => {
+        this.downloadFile(response, 'rfq_export.xlsx');
+      },
+      error: (err) => {
+        console.error('Erreur export:', err);
+      }
+    });
+  }
+
+  private downloadFile(response: any, defaultFilename: string): void {
+    const contentDisposition = response.headers.get('Content-Disposition');
+    let filename = defaultFilename;
+
+    if (contentDisposition) {
+      const match = contentDisposition.match(/filename="?([^";\n]+)"?/);
+      if (match && match[1]) {
+        filename = match[1];
+      }
+    }
+
+    const blob = response.body;
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  }
 }
