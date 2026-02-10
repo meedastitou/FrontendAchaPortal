@@ -289,8 +289,13 @@
                     </td>
                     <td>
                       <div class="fournisseur-cell">
-                        <span class="nom">{{ offre.nom_fournisseur }}</span>
-                        <span class="code">{{ offre.code_fournisseur }}</span>
+                        <div class="fournisseur-name-row">
+                          <span class="nom">{{ offre.nom_fournisseur }}</span>
+                          @if (offre.is_acheteur) {
+                            <span class="badge acheteur-badge" title="Saisie manuelle par l'acheteur">Acheteur</span>
+                          }
+                        </div>
+                        <span class="code">{{ offre.code_fournisseur || '-' }}</span>
                       </div>
                     </td>
                     <td class="prix-col">

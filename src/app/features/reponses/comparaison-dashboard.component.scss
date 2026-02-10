@@ -740,8 +740,14 @@
   }
 
   .fournisseur-cell {
+    .fournisseur-name-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
     .nom {
-      display: block;
       font-weight: 500;
       color: #1f2937;
     }
@@ -751,6 +757,17 @@
       font-size: 12px;
       color: #6b7280;
       font-family: monospace;
+    }
+
+    .acheteur-badge {
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
     }
   }
 
