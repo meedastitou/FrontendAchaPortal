@@ -156,6 +156,31 @@ export class PreBonCommandeComponent implements OnInit {
     });
   }
 
+  // Deselectionner un article (supprimer de la base)
+  deselectArticle(article: ArticleSelectionne, event: Event): void {
+    event.stopPropagation();
+
+    if (!confirm(`Voulez-vous vraiment deselectionner l'article ${article.code_article} ?`)) {
+      return;
+    }
+
+    this.selectionService.delete(article.id).subscribe({
+      next: () => {
+        // Recharger le dashboard
+        this.loadDashboard();
+        // Fermer le modal si le fournisseur n'a plus d'articles
+        const currentFournisseur = this.selectedFournisseur();
+        if (currentFournisseur && currentFournisseur.articles.length <= 1) {
+          this.closeDetail();
+        }
+      },
+      error: (err) => {
+        console.error('Error deleting selection:', err);
+        alert('Erreur lors de la deselection');
+      }
+    });
+  }
+
   // Retour a la comparaison
   retourComparaison(): void {
     this.router.navigate(['comparaison']);

@@ -546,6 +546,29 @@
       font-weight: 600;
     }
   }
+
+  .btn-deselect {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: #fee2e2;
+    color: #dc2626;
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+
+    &:hover {
+      background: #dc2626;
+      color: white;
+      transform: scale(1.1);
+    }
+  }
 }
 
 .modal-footer {

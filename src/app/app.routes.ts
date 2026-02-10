@@ -36,6 +36,14 @@ export const routes: Routes = [
         loadComponent: () => import('./features/reponses/reponse-list.component').then(m => m.ReponseListComponent)
       },
       {
+        path: 'reponses/saisie-manuelle',
+        loadComponent: () => import('./features/reponses/saisie-manuelle.component').then(m => m.SaisieManuelleComponent)
+      },
+      {
+        path: 'reponses/acheteur/:id',
+        loadComponent: () => import('./features/reponses/reponse-acheteur-detail.component').then(m => m.ReponseAcheteurDetailComponent)
+      },
+      {
         path: 'reponses/:id',
         loadComponent: () => import('./features/reponses/reponse-detail.component').then(m => m.ReponseDetailComponent)
       },
