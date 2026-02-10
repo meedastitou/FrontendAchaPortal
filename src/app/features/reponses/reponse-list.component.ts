@@ -13,9 +13,9 @@ import { ReponseComplete, ReponseAcheteurComplete } from '../../core/models';
     <div class="page">
       <div class="page-header">
         <h1>Offres Fournisseurs</h1>
-        <a routerLink="/reponses/saisie-manuelle" class="btn btn-primary">
+        <!-- <a routerLink="/reponses/saisie-manuelle" class="btn btn-primary">
           + Saisie Manuelle
-        </a>
+        </a> -->
       </div>
 
       <!-- Onglets -->
@@ -133,9 +133,9 @@ import { ReponseComplete, ReponseAcheteurComplete } from '../../core/models';
           } @else if (reponsesAcheteur().length === 0) {
             <div class="empty">
               <p>Aucune saisie manuelle</p>
-              <a routerLink="/reponses/saisie-manuelle" class="btn btn-primary" style="margin-top: 16px;">
+              <!-- <a routerLink="/reponses/saisie-manuelle" class="btn btn-primary" style="margin-top: 16px;">
                 + Nouvelle saisie
-              </a>
+              </a> -->
             </div>
           } @else {
             <table class="data-table">
