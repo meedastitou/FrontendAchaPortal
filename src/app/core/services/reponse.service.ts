@@ -2,7 +2,19 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ReponseComplete, ReponseListResponse, ComparaisonResponse, Rejet, ComparaisonDashboardResponse } from '../models';
+import {
+  ReponseComplete,
+  ReponseListResponse,
+  ComparaisonResponse,
+  Rejet,
+  ComparaisonDashboardResponse,
+  ReponseAcheteurRequest,
+  ReponseAcheteurResponse,
+  ReponseAcheteurComplete,
+  ReponseAcheteurListResponse,
+  ArticlesDAResponse,
+  DAListResponse
+} from '../models';
 
 export interface ReponseFilters {
   page?: number;
@@ -62,5 +74,48 @@ export class ReponseService {
    */
   getComparaisonDashboard(): Observable<ComparaisonDashboardResponse> {
     return this.http.get<ComparaisonDashboardResponse>(`${this.API_URL}/comparaison/dashboard`);
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // Saisie Manuelle de Réponse (Tables _acheteur)
+  // ══════════════════════════════════════════════════════════
+
+  /**
+   * Saisir manuellement une réponse acheteur
+   */
+  saisieManuelle(request: ReponseAcheteurRequest): Observable<ReponseAcheteurResponse> {
+    return this.http.post<ReponseAcheteurResponse>(`${this.API_URL}/saisie-manuelle`, request);
+  }
+
+  /**
+   * Lister les réponses acheteur
+   */
+  listReponsesAcheteur(page: number = 1, limit: number = 20): Observable<ReponseAcheteurListResponse> {
+    return this.http.get<ReponseAcheteurListResponse>(`${this.API_URL}/acheteur/list`, {
+      params: { page: page.toString(), limit: limit.toString() }
+    });
+  }
+
+  /**
+   * Obtenir une réponse acheteur par ID
+   */
+  getReponseAcheteur(id: number): Observable<ReponseAcheteurComplete> {
+    return this.http.get<ReponseAcheteurComplete>(`${this.API_URL}/acheteur/${id}`);
+  }
+
+  /**
+   * Récupérer les articles d'une DA pour la saisie manuelle
+   */
+  getArticlesDA(numeroDA: string): Observable<ArticlesDAResponse> {
+    return this.http.get<ArticlesDAResponse>(`${this.API_URL}/da/${numeroDA}/articles`);
+  }
+
+  /**
+   * Lister les DAs disponibles pour la saisie manuelle
+   */
+  listDADisponibles(page: number = 1, limit: number = 20): Observable<DAListResponse> {
+    return this.http.get<DAListResponse>(`${this.API_URL}/da/list`, {
+      params: { page: page.toString(), limit: limit.toString() }
+    });
   }
 }
