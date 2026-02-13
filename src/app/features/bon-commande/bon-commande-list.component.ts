@@ -26,7 +26,15 @@ export class BonCommandeListComponent implements OnInit {
   bonsCommande = signal<BonCommandeResponse[]>([]);
   loadingBC = signal(true);
 
+  // Pagination BC
+  page = 1;
+  limit = 20;
+  totalBC = signal(0);
+
   error = signal<string | null>(null);
+
+  // Pour Math dans le template
+  Math = Math;
 
   constructor(
     private bcService: BonCommandeService,
@@ -58,9 +66,10 @@ export class BonCommandeListComponent implements OnInit {
 
   loadBonsCommande(): void {
     this.loadingBC.set(true);
-    this.bcService.getAll(1, 50).subscribe({
+    this.bcService.getAll(this.page, this.limit).subscribe({
       next: (data) => {
         this.bonsCommande.set(data.bons_commande);
+        this.totalBC.set(data.total);
         this.loadingBC.set(false);
       },
       error: (err) => {
@@ -68,6 +77,11 @@ export class BonCommandeListComponent implements OnInit {
         this.loadingBC.set(false);
       }
     });
+  }
+
+  goToPage(p: number): void {
+    this.page = p;
+    this.loadBonsCommande();
   }
 
   preparerBC(codeFournisseur: string): void {
