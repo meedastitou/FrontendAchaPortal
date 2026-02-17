@@ -130,7 +130,7 @@ export class ComparaisonDashboardComponent implements OnInit {
     const selectionData: any = {
       code_article: article.code_article,
       numero_da: numeroDA,
-      quantite: 1, // TODO: recuperer la quantite demandee
+      quantite: offre.quantite_disponible ?? article.quantite_demandee,
       code_fournisseur: offre.code_fournisseur,
       detail_id: offre.detail_id,
       prix_selectionne: offre.prix_unitaire_ht,
