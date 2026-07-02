@@ -6,3 +6,4 @@ export * from './reponse.model';
 export * from './decision.model';
 export * from './bon-commande.model';
 export * from './selection.model';
+export * from './admin-cotation.model';

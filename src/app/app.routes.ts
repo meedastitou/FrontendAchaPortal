@@ -76,6 +76,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/admin/user-list.component').then(m => m.UserListComponent)
       },
       {
+        path: 'admin/cotations',
+        loadComponent: () => import('./features/admin/admin-cotations.component').then(m => m.AdminCotationsComponent)
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'

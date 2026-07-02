@@ -88,6 +88,12 @@ import { AuthService } from '../core/services/auth.service';
                 <span class="nav-text">Utilisateurs</span>
               }
             </a>
+            <a routerLink="/admin/cotations" routerLinkActive="active" class="nav-item admin-item">
+              <span class="nav-icon">G</span>
+              @if (!sidebarCollapsed) {
+                <span class="nav-text">Gestion Cotations</span>
+              }
+            </a>
           }
         </nav>
 
