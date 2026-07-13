@@ -118,4 +118,15 @@ export class ReponseService {
       params: { page: page.toString(), limit: limit.toString() }
     });
   }
+
+  /**
+   * Modifier la marque proposee d'un detail de reponse
+   */
+  updateMarque(detailId: number, marque: string): Observable<{ success: boolean; message: string; nouvelle_marque: string }> {
+    return this.http.put<{ success: boolean; message: string; nouvelle_marque: string }>(
+      `${this.API_URL}/detail/${detailId}/marque`,
+      null,
+      { params: { marque } }
+    );
+  }
 }

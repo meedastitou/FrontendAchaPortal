@@ -10,7 +10,8 @@ import {
   BonCommandeResponse,
   BCListResponse,
   ConvertOffreToRPARequest,
-  ConvertOffreToRPAResponse
+  ConvertOffreToRPAResponse,
+  BCX3ListResponse
 } from '../models/bon-commande.model';
 
 @Injectable({
@@ -91,6 +92,20 @@ export class BonCommandeService {
     return this.http.post<ConvertOffreToRPAResponse>(
       `${this.apiUrl}/convert-to-rpa`,
       request
+    );
+  }
+
+  /**
+   * Récupérer les BC créés dans Sage X3 via RPA
+   */
+  getBCX3RPA(page: number = 1, limit: number = 20): Observable<BCX3ListResponse> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+
+    return this.http.get<BCX3ListResponse>(
+      `${environment.apiUrl}/auto-bc/bc-x3-rpa`,
+      { params }
     );
   }
 }
