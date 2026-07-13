@@ -1,22 +1,24 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { BonCommandeService } from '../../core/services/bon-commande.service';
 import {
   FournisseurDisponibleBC,
-  BonCommandeResponse
+  BonCommandeResponse,
+  BCX3Response
 } from '../../core/models/bon-commande.model';
 
 @Component({
   selector: 'app-bon-commande-list',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './bon-commande-list.component.html',
   styleUrl: './bon-commande-list.component.scss'
 })
 export class BonCommandeListComponent implements OnInit {
   // Onglet actif
-  activeTab = signal<'nouveau' | 'existant'>('nouveau');
+  activeTab = signal<'nouveau' | 'existant' | 'x3'>('nouveau');
 
   // Fournisseurs disponibles pour nouveau BC
   fournisseursDisponibles = signal<FournisseurDisponibleBC[]>([]);
@@ -30,6 +32,12 @@ export class BonCommandeListComponent implements OnInit {
   page = 1;
   limit = 20;
   totalBC = signal(0);
+
+  // BC X3 RPA
+  bcX3List = signal<BCX3Response[]>([]);
+  loadingBCX3 = signal(false);
+  totalBCX3 = signal(0);
+  selectedBCX3 = signal<BCX3Response | null>(null);
 
   error = signal<string | null>(null);
 
@@ -46,8 +54,11 @@ export class BonCommandeListComponent implements OnInit {
     this.loadBonsCommande();
   }
 
-  setActiveTab(tab: 'nouveau' | 'existant'): void {
+  setActiveTab(tab: 'nouveau' | 'existant' | 'x3'): void {
     this.activeTab.set(tab);
+    if (tab === 'x3' && this.bcX3List().length === 0) {
+      this.loadBCX3();
+    }
   }
 
   loadFournisseursDisponibles(): void {
@@ -128,5 +139,36 @@ export class BonCommandeListComponent implements OnInit {
       'annule': 'Annulé'
     };
     return labels[statut] || statut;
+  }
+
+  // ────────────────────────────────────────────
+  // BC X3 RPA
+  // ────────────────────────────────────────────
+
+  loadBCX3(): void {
+    this.loadingBCX3.set(true);
+    this.bcService.getBCX3RPA().subscribe({
+      next: (data) => {
+        this.bcX3List.set(data.bcs);
+        this.totalBCX3.set(data.total);
+        this.loadingBCX3.set(false);
+      },
+      error: (err) => {
+        console.error('Error loading BC X3:', err);
+        this.loadingBCX3.set(false);
+      }
+    });
+  }
+
+  selectBCX3(bc: BCX3Response): void {
+    if (this.selectedBCX3()?.numero_commande === bc.numero_commande) {
+      this.selectedBCX3.set(null);
+    } else {
+      this.selectedBCX3.set(bc);
+    }
+  }
+
+  getTotalMontantX3(): number {
+    return this.bcX3List().reduce((sum, bc) => sum + (bc.total_commande_ht || 0), 0);
   }
 }

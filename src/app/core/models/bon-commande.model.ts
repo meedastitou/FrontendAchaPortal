@@ -207,3 +207,34 @@ export interface ConvertOffreToRPAResponse {
   montant_total_ht: number | null;
   payload_rpa: any | null;
 }
+
+// ──────────────────────────────────────────────────────────
+// BC crees dans Sage X3 via RPA
+// ──────────────────────────────────────────────────────────
+
+export interface LigneBCX3 {
+  numero_commande: string;
+  code_fournisseur: string;
+  nom_fournisseur: string | null;
+  numero_da: string | null;
+  code_article: string | null;
+  designation_article: string | null;
+  montant_ligne_ht: number | null;
+  montant_ligne_ttc: number | null;
+}
+
+export interface BCX3Response {
+  numero_commande: string;
+  code_fournisseur: string;
+  nom_fournisseur: string | null;
+  total_lignes_ttc: number | null;
+  total_commande_ht: number | null;
+  utilisateur_modif: string | null;
+  lignes: LigneBCX3[];
+  nb_lignes: number;
+}
+
+export interface BCX3ListResponse {
+  bcs: BCX3Response[];
+  total: number;
+}

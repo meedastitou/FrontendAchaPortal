@@ -342,14 +342,19 @@
                       }
                     </td>
                     <td class="marque-demandee">{{ detail.marque_demandee || '-' }}</td>
-                    <td>
-                      @if (detail.marque_conforme === true) {
-                        <span class="badge conforme">Conforme</span>
-                      } @else if (detail.marque_conforme === false) {
-                        <span class="badge non-conforme">{{ detail.marque_proposee || 'Non conforme' }}</span>
-                      } @else {
-                        {{ detail.marque_proposee || '-' }}
-                      }
+                    <td class="marque-cell">
+                      <div class="marque-content">
+                        @if (detail.marque_conforme === true) {
+                          <span class="badge conforme">Conforme</span>
+                        } @else if (detail.marque_conforme === false) {
+                          <span class="badge non-conforme">{{ detail.marque_proposee || 'Non conforme' }}</span>
+                        } @else {
+                          {{ detail.marque_proposee || '-' }}
+                        }
+                        <button class="btn-edit-marque" (click)="openEditMarque(detail)" title="Modifier la marque">
+                          ✎
+                        </button>
+                      </div>
                     </td>
                     <td class="comment">{{ detail.commentaire_article || '-' }}</td>
                   </tr>
@@ -406,6 +411,59 @@
         }
 
         <button class="btn-close-modal" (click)="closeSuccessModal()">Fermer</button>
+      </div>
+    </div>
+  }
+
+  <!-- Edit Marque Modal -->
+  @if (editingDetail()) {
+    <div class="modal-overlay" (click)="closeEditMarque()">
+      <div class="modal-content edit-marque" (click)="$event.stopPropagation()">
+        <div class="modal-header-edit">
+          <h3>Modifier la marque</h3>
+          <button class="btn-close-x" (click)="closeEditMarque()">×</button>
+        </div>
+
+        <div class="modal-body-edit">
+          <div class="edit-info">
+            <div class="info-row">
+              <span class="label">Article:</span>
+              <span class="value code">{{ editingDetail()!.code_article }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Désignation:</span>
+              <span class="value">{{ editingDetail()!.designation_article || '-' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Marque demandée:</span>
+              <span class="value marque-demandee">{{ editingDetail()!.marque_demandee || '-' }}</span>
+            </div>
+          </div>
+
+          <div class="edit-field">
+            <label for="editMarqueInput">Nouvelle marque proposée</label>
+            <input
+              id="editMarqueInput"
+              type="text"
+              [(ngModel)]="editMarque"
+              placeholder="Entrez la marque..."
+              [disabled]="savingMarque()"
+            />
+          </div>
+        </div>
+
+        <div class="modal-footer-edit">
+          <button class="btn-cancel-edit" (click)="closeEditMarque()" [disabled]="savingMarque()">
+            Annuler
+          </button>
+          <button class="btn-save-edit" (click)="saveMarque()" [disabled]="savingMarque()">
+            @if (savingMarque()) {
+              <span class="spinner"></span> Enregistrement...
+            } @else {
+              Enregistrer
+            }
+          </button>
+        </div>
       </div>
     </div>
   }

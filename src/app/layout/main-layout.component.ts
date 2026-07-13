@@ -94,6 +94,18 @@ import { AuthService } from '../core/services/auth.service';
                 <span class="nav-text">Gestion Cotations</span>
               }
             </a>
+            <a routerLink="/admin/sync-x3" routerLinkActive="active" class="nav-item admin-item">
+              <span class="nav-icon">X3</span>
+              @if (!sidebarCollapsed) {
+                <span class="nav-text">Sync Sage X3</span>
+              }
+            </a>
+            <a routerLink="/admin/auto-bc-analyse" routerLinkActive="active" class="nav-item admin-item">
+              <span class="nav-icon">AB</span>
+              @if (!sidebarCollapsed) {
+                <span class="nav-text">Analyse Auto BC</span>
+              }
+            </a>
           }
         </nav>
 

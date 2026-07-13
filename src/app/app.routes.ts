@@ -80,6 +80,14 @@ export const routes: Routes = [
         loadComponent: () => import('./features/admin/admin-cotations.component').then(m => m.AdminCotationsComponent)
       },
       {
+        path: 'admin/sync-x3',
+        loadComponent: () => import('./features/admin/sync-x3.component').then(m => m.SyncX3Component)
+      },
+      {
+        path: 'admin/auto-bc-analyse',
+        loadComponent: () => import('./features/admin/auto-bc-analyse.component').then(m => m.AutoBCAnalyseComponent)
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'

@@ -495,3 +495,182 @@
     }
   }
 }
+
+// ────────────────────────────────────────────
+// BC Sage X3 Tab
+// ────────────────────────────────────────────
+
+.tab-x3 {
+  &.active {
+    color: #7c3aed;
+    border-bottom-color: #7c3aed;
+  }
+
+  .tab-badge {
+    background: #7c3aed;
+  }
+}
+
+.info-x3 {
+  background: #f5f3ff;
+  border-color: #c4b5fd;
+  color: #5b21b6;
+
+  .info-icon {
+    background: #7c3aed;
+    font-size: 10px;
+    font-weight: 700;
+  }
+}
+
+.btn-refresh {
+  margin-left: auto;
+  padding: 8px 16px;
+  background: #7c3aed;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: #6d28d9;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.x3-stats {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.x3-stat {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .x3-stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #7c3aed;
+  }
+
+  .x3-stat-label {
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: uppercase;
+  }
+}
+
+.badge-x3 {
+  background: #f5f3ff;
+  color: #7c3aed;
+}
+
+.bc-table tbody tr.selected {
+  background: #f5f3ff;
+
+  td {
+    border-bottom-color: #c4b5fd;
+  }
+}
+
+.btn-details {
+  padding: 6px 12px;
+  background: #f5f3ff;
+  border: 1px solid #c4b5fd;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #7c3aed;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: #ede9fe;
+  }
+}
+
+.detail-row {
+  background: #fafafa;
+
+  td {
+    padding: 0 !important;
+  }
+}
+
+.bc-lignes {
+  padding: 20px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+
+  h4 {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .no-lignes {
+    color: #6b7280;
+    font-size: 13px;
+    margin: 0;
+  }
+}
+
+.lignes-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+
+  th, td {
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 13px;
+  }
+
+  th {
+    background: #f3f4f6;
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 11px;
+    text-transform: uppercase;
+  }
+
+  td {
+    border-top: 1px solid #f3f4f6;
+    color: #374151;
+  }
+
+  .code {
+    font-family: monospace;
+    font-size: 12px;
+    color: #6b7280;
+  }
+
+  .designation {
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .montant {
+    text-align: right;
+    font-weight: 500;
+    color: #059669;
+  }
+}

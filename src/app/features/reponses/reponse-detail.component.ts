@@ -275,4 +275,53 @@ export class ReponseDetailComponent implements OnInit {
       return sum + (prix * qty);
     }, 0);
   }
+
+  // ══════════════════════════════════════════════════════════
+  // Edition de marque
+  // ══════════════════════════════════════════════════════════
+
+  editingDetail = signal<ReponseDetail | null>(null);
+  editMarque = '';
+  savingMarque = signal(false);
+
+  openEditMarque(detail: ReponseDetail): void {
+    this.editingDetail.set(detail);
+    this.editMarque = detail.marque_proposee || '';
+  }
+
+  closeEditMarque(): void {
+    this.editingDetail.set(null);
+    this.editMarque = '';
+  }
+
+  saveMarque(): void {
+    const detail = this.editingDetail();
+    if (!detail) return;
+
+    this.savingMarque.set(true);
+
+    this.reponseService.updateMarque(detail.id, this.editMarque.trim()).subscribe({
+      next: (response) => {
+        if (response.success) {
+          // Mettre a jour la marque dans la reponse locale
+          const rep = this.reponse();
+          if (rep) {
+            const d = rep.details.find(x => x.id === detail.id);
+            if (d) {
+              d.marque_proposee = response.nouvelle_marque;
+            }
+            this.reponse.set({ ...rep });
+            // Reinitialiser les articles editables
+            this.initArticlesEditables(rep.details);
+          }
+          this.closeEditMarque();
+        }
+        this.savingMarque.set(false);
+      },
+      error: (err) => {
+        console.error('Erreur modification marque:', err);
+        this.savingMarque.set(false);
+      }
+    });
+  }
 }
