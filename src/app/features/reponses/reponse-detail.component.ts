@@ -276,6 +276,24 @@ export class ReponseDetailComponent implements OnInit {
     }, 0);
   }
 
+  // Ouvrir le PDF du devis fournisseur
+  openDevisPDF(): void {
+    const rep = this.reponse();
+    if (!rep || !rep.entete.fichier_devis_url) return;
+
+    const filename = rep.entete.fichier_devis_url;
+    this.reponseService.getDevisPDF(filename).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      },
+      error: (err) => {
+        console.error('Erreur ouverture PDF:', err);
+        this.error.set('Impossible d\'ouvrir le fichier PDF');
+      }
+    });
+  }
+
   // ══════════════════════════════════════════════════════════
   // Edition de marque
   // ══════════════════════════════════════════════════════════

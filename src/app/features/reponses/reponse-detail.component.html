@@ -64,14 +64,14 @@
                 <span class="info-value">{{ reponse()!.entete.commentaire }}</span>
               </div>
             }
-            <!-- @if (reponse()!.entete.fichier_devis_url) {
+            @if (reponse()!.entete.fichier_devis_url) {
               <div class="info-item">
                 <span class="info-label">Fichier devis</span>
-                <a [href]="reponse()!.entete.fichier_devis_url" target="_blank" class="btn-download">
-                  Telecharger
-                </a>
+                <button class="btn-download" (click)="openDevisPDF()">
+                  <span class="icon">📄</span> Voir le devis
+                </button>
               </div>
-            } -->
+            }
           </div>
         </div>
       </div>

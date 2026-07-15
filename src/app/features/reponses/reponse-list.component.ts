@@ -47,6 +47,36 @@ import { ReponseComplete, ReponseAcheteurComplete } from '../../core/models';
         <div class="filters-card">
           <div class="filters">
             <div class="filter-group">
+              <label>Recherche RFQ</label>
+              <input
+                type="text"
+                [(ngModel)]="searchRFQ"
+                (input)="onSearchChange()"
+                placeholder="N° RFQ..."
+              />
+            </div>
+
+            <div class="filter-group">
+              <label>Fournisseur</label>
+              <input
+                type="text"
+                [(ngModel)]="searchFournisseur"
+                (input)="onSearchChange()"
+                placeholder="Code ou nom..."
+              />
+            </div>
+
+            <div class="filter-group">
+              <label>N° DA</label>
+              <input
+                type="text"
+                [(ngModel)]="searchDA"
+                (input)="onSearchChange()"
+                placeholder="Numéro DA..."
+              />
+            </div>
+
+            <div class="filter-group">
               <label>Date debut</label>
               <input type="date" [(ngModel)]="dateDebut" (change)="loadReponses()" />
             </div>
@@ -475,10 +505,14 @@ export class ReponseListComponent implements OnInit {
   reponses = signal<ReponseComplete[]>([]);
   total = signal(0);
   loading = signal(false);
+  searchRFQ = '';
+  searchFournisseur = '';
+  searchDA = '';
   dateDebut = '';
   dateFin = '';
   page = 1;
   limit = 20;
+  private searchTimeout: any;
 
   // Reponses acheteur
   reponsesAcheteur = signal<ReponseAcheteurComplete[]>([]);
@@ -501,11 +535,23 @@ export class ReponseListComponent implements OnInit {
 
   // --- Reponses Fournisseurs ---
 
+  onSearchChange(): void {
+    // Debounce pour éviter trop de requêtes
+    clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(() => {
+      this.page = 1;
+      this.loadReponses();
+    }, 300);
+  }
+
   loadReponses(): void {
     this.loading.set(true);
     this.reponseService.getAll({
       page: this.page,
       limit: this.limit,
+      search_rfq: this.searchRFQ || undefined,
+      search_fournisseur: this.searchFournisseur || undefined,
+      search_da: this.searchDA || undefined,
       date_debut: this.dateDebut || undefined,
       date_fin: this.dateFin || undefined
     }).subscribe({
@@ -519,6 +565,9 @@ export class ReponseListComponent implements OnInit {
   }
 
   resetFilters(): void {
+    this.searchRFQ = '';
+    this.searchFournisseur = '';
+    this.searchDA = '';
     this.dateDebut = '';
     this.dateFin = '';
     this.page = 1;

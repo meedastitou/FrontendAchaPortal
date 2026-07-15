@@ -20,6 +20,9 @@ export interface ReponseFilters {
   page?: number;
   limit?: number;
   code_fournisseur?: string;
+  search_rfq?: string;
+  search_fournisseur?: string;
+  search_da?: string;
   date_debut?: string;
   date_fin?: string;
 }
@@ -29,6 +32,7 @@ export interface ReponseFilters {
 })
 export class ReponseService {
   private readonly API_URL = `${environment.apiUrl}/reponses`;
+  private readonly API_URL_DEVIS = `${environment.apiUrlDevis}`;
 
   constructor(private http: HttpClient) {}
 
@@ -38,6 +42,9 @@ export class ReponseService {
     if (filters.page) params = params.set('page', filters.page.toString());
     if (filters.limit) params = params.set('limit', filters.limit.toString());
     if (filters.code_fournisseur) params = params.set('code_fournisseur', filters.code_fournisseur);
+    if (filters.search_rfq) params = params.set('search_rfq', filters.search_rfq);
+    if (filters.search_fournisseur) params = params.set('search_fournisseur', filters.search_fournisseur);
+    if (filters.search_da) params = params.set('search_da', filters.search_da);
     if (filters.date_debut) params = params.set('date_debut', filters.date_debut);
     if (filters.date_fin) params = params.set('date_fin', filters.date_fin);
 
@@ -128,5 +135,15 @@ export class ReponseService {
       null,
       { params: { marque } }
     );
+  }
+
+  /**
+   * Récupérer le PDF du devis fournisseur
+   */
+  getDevisPDF(filename: string): Observable<Blob> {
+    return this.http.get(`${this.API_URL_DEVIS}`, {
+      params: { filename },
+      responseType: 'blob'
+    });
   }
 }
