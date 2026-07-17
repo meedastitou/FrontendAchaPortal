@@ -40,6 +40,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/reponses/saisie-manuelle.component').then(m => m.SaisieManuelleComponent)
       },
       {
+        path: 'reponses/saisie-devis-rfq',
+        loadComponent: () => import('./features/reponses/saisie-devis-rfq.component').then(m => m.SaisieDevisRFQComponent)
+      },
+      {
         path: 'reponses/acheteur/:id',
         loadComponent: () => import('./features/reponses/reponse-acheteur-detail.component').then(m => m.ReponseAcheteurDetailComponent)
       },

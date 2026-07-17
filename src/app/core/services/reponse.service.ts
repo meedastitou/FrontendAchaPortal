@@ -13,7 +13,12 @@ import {
   ReponseAcheteurComplete,
   ReponseAcheteurListResponse,
   ArticlesDAResponse,
-  DAListResponse
+  DAListResponse,
+  // Saisie Devis RFQ
+  SaisieDevisRFQRequest,
+  RFQPourSaisie,
+  RFQPourSaisieListResponse,
+  RFQDetailPourSaisie
 } from '../models';
 
 export interface ReponseFilters {
@@ -145,5 +150,54 @@ export class ReponseService {
       params: { filename },
       responseType: 'blob'
     });
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // Saisie Devis par RFQ existant
+  // ══════════════════════════════════════════════════════════
+
+  /**
+   * Lister les RFQs disponibles pour saisie de devis
+   */
+  getRFQsPourSaisie(
+    page: number = 1,
+    limit: number = 50,
+    codeFournisseur?: string,
+    search?: string
+  ): Observable<RFQPourSaisieListResponse> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+
+    if (codeFournisseur) {
+      params = params.set('code_fournisseur', codeFournisseur);
+    }
+    if (search) {
+      params = params.set('search', search);
+    }
+
+    return this.http.get<RFQPourSaisieListResponse>(
+      `${this.API_URL}/saisie-rfq/rfqs-disponibles`,
+      { params }
+    );
+  }
+
+  /**
+   * Obtenir le détail d'un RFQ pour la saisie de devis
+   */
+  getRFQPourSaisie(rfqUuid: string): Observable<RFQDetailPourSaisie> {
+    return this.http.get<RFQDetailPourSaisie>(
+      `${this.API_URL}/saisie-rfq/rfq/${rfqUuid}`
+    );
+  }
+
+  /**
+   * Saisir un devis pour un RFQ existant
+   */
+  saisieDevisRFQ(request: SaisieDevisRFQRequest): Observable<ReponseAcheteurResponse> {
+    return this.http.post<ReponseAcheteurResponse>(
+      `${this.API_URL}/saisie-rfq`,
+      request
+    );
   }
 }

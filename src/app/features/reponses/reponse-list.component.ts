@@ -13,9 +13,9 @@ import { ReponseComplete, ReponseAcheteurComplete } from '../../core/models';
     <div class="page">
       <div class="page-header">
         <h1>Offres Fournisseurs</h1>
-        <!-- <a routerLink="/reponses/saisie-manuelle" class="btn btn-primary">
-          + Saisie Manuelle
-        </a> -->
+        <a routerLink="/reponses/saisie-devis-rfq" class="btn btn-primary">
+          + Saisir Devis RFQ
+        </a>
       </div>
 
       <!-- Onglets -->

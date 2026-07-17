@@ -249,3 +249,66 @@ export interface DAListResponse {
   page: number;
   limit: number;
 }
+
+// ══════════════════════════════════════════════════════════
+// Saisie Devis par RFQ existant
+// ══════════════════════════════════════════════════════════
+
+export interface LigneDevisRFQ {
+  ligne_cotation_id: number;
+  code_article: string;
+  prix_unitaire_ht?: number;
+  quantite_disponible?: number;
+  delai_livraison_jours?: number;
+  marque_proposee?: string;
+  commentaire_article?: string;
+}
+
+export interface SaisieDevisRFQRequest {
+  rfq_uuid: string;
+  reference_fournisseur?: string;
+  devise: string;
+  conditions_paiement?: string;
+  commentaire_global?: string;
+  lignes: LigneDevisRFQ[];
+}
+
+export interface RFQPourSaisie {
+  uuid: string;
+  numero_rfq: string;
+  code_fournisseur: string;
+  nom_fournisseur: string;
+  email_fournisseur?: string;
+  date_envoi: string;
+  statut: string;
+  nb_articles: number;
+}
+
+export interface RFQPourSaisieListResponse {
+  rfqs: RFQPourSaisie[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface LigneCotationPourSaisie {
+  id: number;
+  code_article: string;
+  designation_article?: string;
+  quantite_demandee: number;
+  unite?: string;
+  marque_souhaitee?: string;
+  numero_da: string;
+  tarif_reference?: number;
+}
+
+export interface RFQDetailPourSaisie {
+  uuid: string;
+  numero_rfq: string;
+  code_fournisseur: string;
+  nom_fournisseur: string;
+  email_fournisseur?: string;
+  date_envoi: string;
+  statut: string;
+  lignes: LigneCotationPourSaisie[];
+}
