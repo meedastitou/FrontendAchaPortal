@@ -64,10 +64,11 @@ export interface AnalyseMarqueProbleme {
   nom_fournisseur: string | null;
   marque_souhaitee: string | null;
   marque_proposee: string | null;
-  type_probleme: string; // 'manquante', 'differente', 'non_validee'
+  type_probleme: string; // 'manquante', 'differente', 'non_validee', 'recuperee_x3'
   valide_xmarqa: boolean;
   valide_historique: boolean;
   marque_finale: string | null;
+  origine_marque: string | null; // 'DA', 'BC', 'BR', 'Table Article (XMARQA)', 'Aucune (Par défaut)'
   message: string | null;
 }
 

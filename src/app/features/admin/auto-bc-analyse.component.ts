@@ -419,7 +419,7 @@ type TabType = 'reponses' | 'statuts' | 'prix' | 'marques' | 'final';
                       <th>Prix</th>
                       <th>Qte</th>
                       <th>Marque</th>
-                      <th>Source Marque</th>
+                      <th>Origine Marque</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -441,7 +441,23 @@ type TabType = 'reponses' | 'statuts' | 'prix' | 'marques' | 'final';
                         </td>
                         <td>
                           @if (isMarqueFromX3(r.code_article, r.code_fournisseur)) {
-                            <span class="badge badge-x3-source">XMARQA</span>
+                            @switch (getOrigineMarque(r.code_article, r.code_fournisseur)) {
+                              @case ('DA') {
+                                <span class="badge badge-origine-da">DA</span>
+                              }
+                              @case ('BC') {
+                                <span class="badge badge-origine-bc">BC</span>
+                              }
+                              @case ('BR') {
+                                <span class="badge badge-origine-br">BR</span>
+                              }
+                              @case ('Table Article (XMARQA)') {
+                                <span class="badge badge-x3-source">XMARQA</span>
+                              }
+                              @default {
+                                <span class="badge badge-x3-source">X3</span>
+                              }
+                            }
                           } @else {
                             <span class="badge badge-info">Proposee</span>
                           }
@@ -458,7 +474,7 @@ type TabType = 'reponses' | 'statuts' | 'prix' | 'marques' | 'final';
               <div class="table-card marques-x3-section">
                 <h3>Marques Recuperees depuis X3 ({{ getMarquesRecupereesX3().length }})</h3>
                 <p class="table-description">
-                  Ces marques etaient vides ou non valides dans les reponses fournisseurs et ont ete recuperees depuis XMARQA.
+                  Ces marques etaient vides ou non valides dans les reponses fournisseurs et ont ete recuperees depuis X3 (priorite: DA > BC > BR > XMARQA).
                 </p>
 
                 <table class="data-table">
@@ -469,7 +485,7 @@ type TabType = 'reponses' | 'statuts' | 'prix' | 'marques' | 'final';
                       <th>Fournisseur</th>
                       <th>Marque Proposee</th>
                       <th>Marque X3</th>
-                      <th>Source</th>
+                      <th>Origine</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -489,7 +505,23 @@ type TabType = 'reponses' | 'statuts' | 'prix' | 'marques' | 'final';
                           <span class="badge badge-x3">{{ m.marque_finale }}</span>
                         </td>
                         <td>
-                          <span class="badge badge-info">XMARQA</span>
+                          @switch (m.origine_marque) {
+                            @case ('DA') {
+                              <span class="badge badge-origine-da">DA</span>
+                            }
+                            @case ('BC') {
+                              <span class="badge badge-origine-bc">BC</span>
+                            }
+                            @case ('BR') {
+                              <span class="badge badge-origine-br">BR</span>
+                            }
+                            @case ('Table Article (XMARQA)') {
+                              <span class="badge badge-x3-source">XMARQA</span>
+                            }
+                            @default {
+                              <span class="badge badge-info">{{ m.origine_marque || 'X3' }}</span>
+                            }
+                          }
                         </td>
                       </tr>
                     }
@@ -1198,6 +1230,25 @@ type TabType = 'reponses' | 'statuts' | 'prix' | 'marques' | 'final';
       color: white;
       font-weight: 600;
     }
+
+    /* Badges Origine Marque */
+    .badge-origine-da {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      font-weight: 600;
+    }
+
+    .badge-origine-bc {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: white;
+      font-weight: 600;
+    }
+
+    .badge-origine-br {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+      font-weight: 600;
+    }
   `]
 })
 export class AutoBCAnalyseComponent {
@@ -1284,5 +1335,11 @@ export class AutoBCAnalyseComponent {
     const marqueInfo = this.findMarqueInfo(codeArticle, codeFournisseur);
     // La marque vient de X3 si type_probleme est 'recuperee_x3'
     return marqueInfo?.type_probleme === 'recuperee_x3' && !!marqueInfo?.marque_finale;
+  }
+
+  // Retourne l'origine de la marque (DA, BC, BR, XMARQA)
+  getOrigineMarque(codeArticle: string, codeFournisseur: string): string | null {
+    const marqueInfo = this.findMarqueInfo(codeArticle, codeFournisseur);
+    return marqueInfo?.origine_marque || null;
   }
 }
