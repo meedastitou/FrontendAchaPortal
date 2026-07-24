@@ -238,3 +238,54 @@ export interface BCX3ListResponse {
   bcs: BCX3Response[];
   total: number;
 }
+
+// ──────────────────────────────────────────────────────────
+// Caneva BC - Saisie Manuelle
+// ──────────────────────────────────────────────────────────
+
+export interface LigneCanevaBCCreate {
+  code_article: string;
+  quantite: number;
+  prix_unitaire_ht: number;
+  marque: string | null;
+  affaire: string | null;
+  tva_pourcent: number;
+  numeros_da: string[];  // Liste des DA associées
+  commentaire: string | null;
+}
+
+export interface GenerateCanevaBCRequest {
+  code_fournisseur: string;
+  lignes: LigneCanevaBCCreate[];
+  lieu_livraison?: string;
+  commentaire?: string;
+}
+
+export interface GenerateCanevaBCResponse {
+  success: boolean;
+  numero_bc: string | null;
+  message: string;
+  montant_total_ht: number | null;
+  montant_total_ttc: number | null;
+  code_fournisseur: string | null;
+  nom_fournisseur: string | null;
+  nb_lignes: number | null;
+  nb_articles: number | null;
+  das_incluses: string[] | null;
+}
+
+// ──────────────────────────────────────────────────────────
+// Envoi BC au RPA
+// ──────────────────────────────────────────────────────────
+
+export interface EnvoyerBCRPAResponse {
+  success: boolean;
+  message: string;
+  rpa_request_id: string | null;
+  numero_bc: string | null;
+  code_fournisseur: string | null;
+  nom_fournisseur: string | null;
+  nb_lignes: number | null;
+  montant_total_ht: number | null;
+  payload_rpa: any | null;
+}

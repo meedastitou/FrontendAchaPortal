@@ -497,6 +497,30 @@
 }
 
 // ────────────────────────────────────────────
+// Caneva Tab
+// ────────────────────────────────────────────
+
+.tab-caneva {
+  &.active {
+    color: #10b981;
+    border-bottom-color: #10b981;
+  }
+
+  .tab-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background: #10b981;
+    color: white;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: 700;
+  }
+}
+
+// ────────────────────────────────────────────
 // BC Sage X3 Tab
 // ────────────────────────────────────────────
 

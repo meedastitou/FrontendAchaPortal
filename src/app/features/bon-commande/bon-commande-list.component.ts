@@ -18,7 +18,7 @@ import {
 })
 export class BonCommandeListComponent implements OnInit {
   // Onglet actif
-  activeTab = signal<'nouveau' | 'existant' | 'x3'>('nouveau');
+  activeTab = signal<'nouveau' | 'caneva' | 'existant' | 'x3'>('nouveau');
 
   // Fournisseurs disponibles pour nouveau BC
   fournisseursDisponibles = signal<FournisseurDisponibleBC[]>([]);
@@ -54,10 +54,13 @@ export class BonCommandeListComponent implements OnInit {
     this.loadBonsCommande();
   }
 
-  setActiveTab(tab: 'nouveau' | 'existant' | 'x3'): void {
+  setActiveTab(tab: 'nouveau' | 'caneva' | 'existant' | 'x3'): void {
     this.activeTab.set(tab);
     if (tab === 'x3' && this.bcX3List().length === 0) {
       this.loadBCX3();
+    }
+    if (tab === 'caneva') {
+      this.router.navigate(['/bon-commande/caneva']);
     }
   }
 

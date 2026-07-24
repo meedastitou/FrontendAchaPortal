@@ -11,7 +11,12 @@ import {
   BCListResponse,
   ConvertOffreToRPARequest,
   ConvertOffreToRPAResponse,
-  BCX3ListResponse
+  BCX3ListResponse,
+  // Caneva BC
+  GenerateCanevaBCRequest,
+  GenerateCanevaBCResponse,
+  // RPA
+  EnvoyerBCRPAResponse
 } from '../models/bon-commande.model';
 
 @Injectable({
@@ -106,6 +111,26 @@ export class BonCommandeService {
     return this.http.get<BCX3ListResponse>(
       `${environment.apiUrl}/auto-bc/bc-x3-rpa`,
       { params }
+    );
+  }
+
+  /**
+   * Créer un BC via saisie manuelle (Caneva BC)
+   */
+  genererCanevaBC(request: GenerateCanevaBCRequest): Observable<GenerateCanevaBCResponse> {
+    return this.http.post<GenerateCanevaBCResponse>(
+      `${this.apiUrl}/caneva`,
+      request
+    );
+  }
+
+  /**
+   * Envoyer un BC au RPA (Sage X3)
+   */
+  envoyerRPA(numeroBC: string): Observable<EnvoyerBCRPAResponse> {
+    return this.http.post<EnvoyerBCRPAResponse>(
+      `${this.apiUrl}/${numeroBC}/envoyer-rpa`,
+      {}
     );
   }
 }

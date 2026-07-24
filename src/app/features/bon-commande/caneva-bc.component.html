@@ -1,0 +1,367 @@
+<div class="caneva-bc-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <button class="btn-back" (click)="retour()">
+        <span class="arrow">←</span>
+        Retour
+      </button>
+      <div class="title-section">
+        <h1>Caneva de Bon de Commande</h1>
+        <p class="subtitle">Saisie manuelle des articles</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  @if (error()) {
+    <div class="alert alert-error">
+      <span class="alert-icon">⚠</span>
+      {{ error() }}
+      <button class="alert-close" (click)="error.set(null)">×</button>
+    </div>
+  }
+
+  @if (success()) {
+    <div class="alert alert-success">
+      <span class="alert-icon">✓</span>
+      {{ success() }}
+      @if (sendingRPA()) {
+        <span class="rpa-status">Envoi au RPA en cours...</span>
+      }
+    </div>
+  }
+
+  @if (rpaSuccess()) {
+    <div class="alert alert-success alert-rpa">
+      <span class="alert-icon">🤖</span>
+      {{ rpaSuccess() }}
+    </div>
+  }
+
+  <div class="main-content">
+    <!-- Formulaire principal -->
+    <div class="form-section">
+      <!-- Sélection du fournisseur -->
+      <div class="form-card">
+        <h2>Fournisseur</h2>
+        @if (loadingFournisseurs()) {
+          <div class="loading-inline">
+            <div class="spinner-small"></div>
+            <span>Chargement des fournisseurs...</span>
+          </div>
+        } @else {
+          <div class="form-group">
+            <label for="searchFournisseur">Rechercher un fournisseur</label>
+            <input
+              type="text"
+              id="searchFournisseur"
+              [ngModel]="searchFournisseur()"
+              (ngModelChange)="searchFournisseur.set($event)"
+              class="form-control search-input"
+              placeholder="Rechercher par nom ou code...">
+          </div>
+          <div class="form-group">
+            <label for="fournisseur">Sélectionner un fournisseur *</label>
+            <select
+              id="fournisseur"
+              [ngModel]="selectedFournisseur()"
+              (ngModelChange)="selectedFournisseur.set($event)"
+              class="form-control"
+              size="6">
+              <option value="">-- Choisir un fournisseur --</option>
+              @for (f of fournisseursFiltres(); track f.code_fournisseur) {
+                <option [value]="f.code_fournisseur">
+                  {{ f.nom_fournisseur }} ({{ f.code_fournisseur }})
+                </option>
+              }
+            </select>
+            <span class="field-hint">
+              {{ fournisseursFiltres().length }} fournisseur(s) trouvé(s)
+              @if (selectedFournisseur()) {
+                - <strong>Sélectionné: {{ getFournisseurNom() }}</strong>
+              }
+            </span>
+          </div>
+        }
+      </div>
+
+      <!-- Articles -->
+      <div class="form-card articles-card">
+        <div class="card-header">
+          <h2>Articles</h2>
+          <button class="btn-add" (click)="ajouterArticle()">
+            <span class="icon">+</span>
+            Ajouter un article
+          </button>
+        </div>
+
+        @if (articles().length === 0) {
+          <div class="empty-articles">
+            <p>Aucun article ajouté. Cliquez sur "Ajouter un article" pour commencer.</p>
+          </div>
+        } @else {
+          <div class="articles-list">
+            @for (article of articles(); track article.id; let i = $index) {
+              <div class="article-row">
+                <div class="article-header">
+                  <span class="article-number">Article {{ i + 1 }}</span>
+                  <button class="btn-remove" (click)="supprimerArticle(article.id)" title="Supprimer">
+                    ×
+                  </button>
+                </div>
+
+                <div class="article-fields">
+                  <!-- Ligne 1: Code article, Quantité, Prix -->
+                  <div class="field-row">
+                    <div class="form-group flex-1">
+                      <label>Code Article *</label>
+                      <input
+                        type="text"
+                        [(ngModel)]="article.code_article"
+                        class="form-control"
+                        placeholder="Ex: ART001"
+                        (input)="refreshArticles()">
+                    </div>
+                    <div class="form-group">
+                      <label>Quantité *</label>
+                      <input
+                        type="number"
+                        [(ngModel)]="article.quantite"
+                        class="form-control"
+                        min="0.001"
+                        step="0.001"
+                        (input)="refreshArticles()">
+                    </div>
+                    <div class="form-group">
+                      <label>Prix Unitaire HT *</label>
+                      <input
+                        type="number"
+                        [(ngModel)]="article.prix_unitaire_ht"
+                        class="form-control"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                        (input)="refreshArticles()">
+                    </div>
+                  </div>
+
+                  <!-- Ligne 2: Marque, Affaire -->
+                  <div class="field-row">
+                    <div class="form-group flex-1">
+                      <label>Marque</label>
+                      <input
+                        type="text"
+                        [(ngModel)]="article.marque"
+                        class="form-control"
+                        placeholder="Ex: Marque X">
+                    </div>
+                    <div class="form-group flex-1">
+                      <label>Affaire</label>
+                      <input
+                        type="text"
+                        [(ngModel)]="article.affaire"
+                        class="form-control"
+                        placeholder="Ex: AFF001">
+                    </div>
+                  </div>
+
+                  <!-- Ligne 3: DA (tags) -->
+                  <div class="field-row da-row">
+                    <div class="form-group flex-1">
+                      <label>Numéros de DA *</label>
+                      <div class="da-input-container">
+                        <div class="da-tags">
+                          @for (da of article.numeros_da; track da) {
+                            <span class="da-tag">
+                              {{ da }}
+                              <button class="da-remove" (click)="supprimerDA(article, da)">×</button>
+                            </span>
+                          }
+                        </div>
+                        <div class="da-add">
+                          <input
+                            type="text"
+                            [(ngModel)]="article.da_input"
+                            class="form-control da-input"
+                            placeholder="Saisir un numéro de DA puis Entrée"
+                            (keydown)="onDAKeydown($event, article)">
+                          <button class="btn-add-da" (click)="ajouterDA(article)">+</button>
+                        </div>
+                      </div>
+                      <span class="field-hint">
+                        @if (article.numeros_da.length > 1) {
+                          <span class="highlight">{{ article.numeros_da.length }} DA</span> - Cette ligne sera dupliquée pour chaque DA
+                        } @else if (article.numeros_da.length === 1) {
+                          1 DA associée
+                        } @else {
+                          Ajoutez au moins une DA
+                        }
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Montant calculé -->
+                  <div class="article-total">
+                    <span class="total-label">Montant HT:</span>
+                    <span class="total-value">
+                      {{ formatMontant(article.quantite * article.prix_unitaire_ht * (article.numeros_da.length || 1)) }} MAD
+                    </span>
+                    @if (article.numeros_da.length > 1) {
+                      <span class="total-info">({{ article.numeros_da.length }} lignes)</span>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Conditions -->
+      <div class="form-card">
+        <h2>Conditions</h2>
+        <div class="form-group">
+          <label>Lieu de livraison</label>
+          <input
+            type="text"
+            [ngModel]="lieuLivraison()"
+            (ngModelChange)="lieuLivraison.set($event)"
+            class="form-control"
+            placeholder="Ex: Entrepôt principal">
+        </div>
+        <div class="form-group">
+          <label>Commentaire</label>
+          <textarea
+            [ngModel]="commentaireBC()"
+            (ngModelChange)="commentaireBC.set($event)"
+            class="form-control"
+            rows="3"
+            placeholder="Commentaire ou instructions spéciales..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panneau récapitulatif -->
+    <div class="summary-panel">
+      <div class="summary-card sticky">
+        <h3>Récapitulatif</h3>
+
+        <!-- Fournisseur -->
+        @if (selectedFournisseur()) {
+          <div class="summary-item">
+            <span class="summary-label">Fournisseur</span>
+            <span class="summary-value">{{ getFournisseurNom() }}</span>
+          </div>
+        }
+
+        <!-- Stats -->
+        <div class="summary-stats">
+          <div class="stat">
+            <span class="stat-value">{{ articles().length }}</span>
+            <span class="stat-label">Article(s)</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value">{{ totalLignes() }}</span>
+            <span class="stat-label">Ligne(s) BC</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value">{{ dasUniques().length }}</span>
+            <span class="stat-label">DA unique(s)</span>
+          </div>
+        </div>
+
+        <!-- DAs -->
+        @if (dasUniques().length > 0) {
+          <div class="summary-das">
+            <span class="summary-label">DA incluses:</span>
+            <div class="da-chips">
+              @for (da of dasUniques(); track da) {
+                <span class="da-chip">{{ da }}</span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Totaux -->
+        <div class="summary-totals">
+          <div class="total-row">
+            <span>Total HT</span>
+            <span class="montant">{{ formatMontant(totalHT()) }} MAD</span>
+          </div>
+          <div class="total-row">
+            <span>TVA (20%)</span>
+            <span class="montant">{{ formatMontant(totalTVA()) }} MAD</span>
+          </div>
+          <div class="total-row total-ttc">
+            <span>Total TTC</span>
+            <span class="montant">{{ formatMontant(totalTTC()) }} MAD</span>
+          </div>
+        </div>
+
+        <!-- Preview des lignes -->
+        @if (lignesPreview().length > 0 && lignesPreview().length <= 10) {
+          <div class="preview-section">
+            <h4>Aperçu des lignes</h4>
+            <div class="preview-table">
+              @for (ligne of lignesPreview(); track $index) {
+                <div class="preview-row">
+                  <span class="preview-article">{{ ligne.code_article }}</span>
+                  <span class="preview-da">{{ ligne.numero_da }}</span>
+                  <span class="preview-montant">{{ formatMontant(ligne.montant_ht) }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Option RPA -->
+        <div class="rpa-option">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              [checked]="envoyerRPA()"
+              (change)="envoyerRPA.set($any($event.target).checked)">
+            <span class="checkbox-custom"></span>
+            <span class="checkbox-text">Envoyer au RPA (Sage X3)</span>
+          </label>
+          <span class="rpa-hint">Le BC sera créé dans Sage X3 automatiquement</span>
+        </div>
+
+        <!-- Bouton de validation -->
+        <button
+          class="btn-generer"
+          [class.btn-rpa]="envoyerRPA()"
+          (click)="genererBC()"
+          [disabled]="saving() || sendingRPA() || articles().length === 0 || !selectedFournisseur()">
+          @if (saving()) {
+            <span class="spinner-btn"></span>
+            Création en cours...
+          } @else if (sendingRPA()) {
+            <span class="spinner-btn"></span>
+            Envoi au RPA...
+          } @else if (envoyerRPA()) {
+            Générer et Envoyer au RPA
+          } @else {
+            Générer le Bon de Commande
+          }
+        </button>
+
+        <!-- Bouton pour envoyer manuellement au RPA (si BC déjà créé) -->
+        @if (numeroBCCree() && !envoyerRPA() && !rpaSuccess()) {
+          <button
+            class="btn-rpa-manual"
+            (click)="envoyerAuRPA(numeroBCCree()!)"
+            [disabled]="sendingRPA()">
+            @if (sendingRPA()) {
+              <span class="spinner-btn"></span>
+              Envoi...
+            } @else {
+              🤖 Envoyer au RPA maintenant
+            }
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+</div>
