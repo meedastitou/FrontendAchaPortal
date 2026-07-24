@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BonCommandeService } from '../../core/services/bon-commande.service';
-import { FournisseurService } from '../../core/services/fournisseur.service';
-import { Fournisseur } from '../../core/models/fournisseur.model';
 import { LigneCanevaBCCreate, GenerateCanevaBCRequest } from '../../core/models/bon-commande.model';
 
 interface ArticleSaisie {
@@ -29,23 +27,8 @@ interface ArticleSaisie {
   styleUrl: './caneva-bc.component.scss'
 })
 export class CanevaBCComponent implements OnInit {
-  // Fournisseurs
-  fournisseurs = signal<Fournisseur[]>([]);
-  loadingFournisseurs = signal(true);
+  // Fournisseur (saisie manuelle)
   selectedFournisseur = signal<string>('');
-  searchFournisseur = signal<string>('');
-
-  // Fournisseurs filtrés par recherche
-  fournisseursFiltres = computed(() => {
-    const search = this.searchFournisseur().toLowerCase().trim();
-    if (!search) {
-      return this.fournisseurs();
-    }
-    return this.fournisseurs().filter(f =>
-      f.nom_fournisseur.toLowerCase().includes(search) ||
-      f.code_fournisseur.toLowerCase().includes(search)
-    );
-  });
 
   // Articles (lignes à saisir)
   articles = signal<ArticleSaisie[]>([]);
@@ -134,28 +117,11 @@ export class CanevaBCComponent implements OnInit {
 
   constructor(
     private bcService: BonCommandeService,
-    private fournisseurService: FournisseurService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.loadFournisseurs();
     this.ajouterArticle(); // Ajouter une première ligne vide
-  }
-
-  loadFournisseurs(): void {
-    this.loadingFournisseurs.set(true);
-    // Note: limit max est 100 côté backend, on charge les actifs non-blacklistés
-    this.fournisseurService.getAll({ limit: 100, statut: 'actif', blacklist: false }).subscribe({
-      next: (data) => {
-        this.fournisseurs.set(data.fournisseurs);
-        this.loadingFournisseurs.set(false);
-      },
-      error: (err) => {
-        console.error('Error loading fournisseurs:', err);
-        this.loadingFournisseurs.set(false);
-      }
-    });
   }
 
   ajouterArticle(): void {
@@ -333,10 +299,5 @@ export class CanevaBCComponent implements OnInit {
   // Méthode pour forcer la mise à jour du signal articles
   refreshArticles(): void {
     this.articles.update(arts => [...arts]);
-  }
-
-  getFournisseurNom(): string {
-    const f = this.fournisseurs().find(f => f.code_fournisseur === this.selectedFournisseur());
-    return f ? f.nom_fournisseur : '';
   }
 }
