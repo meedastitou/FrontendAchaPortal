@@ -115,10 +115,10 @@ export class BonCommandeService {
   }
 
   /**
-   * Créer un BC via saisie manuelle (Caneva BC)
+   * Envoyer les données Caneva BC directement au RPA (sans enregistrement en base)
    */
-  genererCanevaBC(request: GenerateCanevaBCRequest): Observable<GenerateCanevaBCResponse> {
-    return this.http.post<GenerateCanevaBCResponse>(
+  genererCanevaBC(request: GenerateCanevaBCRequest): Observable<EnvoyerBCRPAResponse> {
+    return this.http.post<EnvoyerBCRPAResponse>(
       `${this.apiUrl}/caneva`,
       request
     );

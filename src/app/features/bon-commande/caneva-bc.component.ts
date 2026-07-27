@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BonCommandeService } from '../../core/services/bon-commande.service';
-import { LigneCanevaBCCreate, GenerateCanevaBCRequest } from '../../core/models/bon-commande.model';
+import { LigneCanevaBCCreate, GenerateCanevaBCRequest, EnvoyerBCRPAResponse } from '../../core/models/bon-commande.model';
 
 interface ArticleSaisie {
   id: number;
@@ -42,12 +42,6 @@ export class CanevaBCComponent implements OnInit {
   saving = signal(false);
   error = signal<string | null>(null);
   success = signal<string | null>(null);
-
-  // RPA
-  envoyerRPA = signal(false);  // Option pour envoyer au RPA après création
-  sendingRPA = signal(false);
-  rpaSuccess = signal<string | null>(null);
-  numeroBCCree = signal<string | null>(null);  // Pour stocker le numéro BC créé
 
   // Computed: Nombre total de lignes (avec duplication par DA)
   totalLignes = computed(() => {
@@ -203,7 +197,7 @@ export class CanevaBCComponent implements OnInit {
     return true;
   }
 
-  genererBC(): void {
+  envoyerAuRPA(): void {
     this.error.set(null);
     this.success.set(null);
 
@@ -226,63 +220,41 @@ export class CanevaBCComponent implements OnInit {
     }));
 
     const request: GenerateCanevaBCRequest = {
-      code_fournisseur: this.selectedFournisseur(),
+      code_fournisseur: this.selectedFournisseur().trim().toUpperCase(),
       lignes,
       lieu_livraison: this.lieuLivraison() || undefined,
       commentaire: this.commentaireBC() || undefined
     };
 
     this.bcService.genererCanevaBC(request).subscribe({
-      next: (response) => {
+      next: (response: EnvoyerBCRPAResponse) => {
         this.saving.set(false);
-        if (response.success && response.numero_bc) {
-          this.numeroBCCree.set(response.numero_bc);
-          this.success.set(`Bon de commande ${response.numero_bc} créé avec succès!`);
-
-          // Si l'option RPA est cochée, envoyer au RPA
-          if (this.envoyerRPA()) {
-            this.envoyerAuRPA(response.numero_bc);
-          } else {
-            // Rediriger vers le détail du BC après 2 secondes
-            setTimeout(() => {
-              this.router.navigate(['/bon-commande', response.numero_bc]);
-            }, 2000);
-          }
-        } else {
-          this.error.set(response.message || 'Erreur lors de la création du BC');
-        }
-      },
-      error: (err) => {
-        this.saving.set(false);
-        this.error.set(err.error?.detail || 'Erreur lors de la création du BC');
-        console.error('Error creating BC:', err);
-      }
-    });
-  }
-
-  envoyerAuRPA(numeroBC: string): void {
-    this.sendingRPA.set(true);
-    this.rpaSuccess.set(null);
-
-    this.bcService.envoyerRPA(numeroBC).subscribe({
-      next: (response) => {
-        this.sendingRPA.set(false);
         if (response.success) {
-          this.rpaSuccess.set(`BC envoyé au RPA! ID: ${response.rpa_request_id}`);
-          // Rediriger après 2 secondes
+          this.success.set(`Envoyé au RPA avec succès! (${response.nb_lignes} lignes) - ID: ${response.rpa_request_id}`);
+          // Réinitialiser le formulaire après 3 secondes
           setTimeout(() => {
-            this.router.navigate(['/bon-commande', numeroBC]);
-          }, 2000);
+            this.resetFormulaire();
+          }, 3000);
         } else {
           this.error.set(response.message || 'Erreur lors de l\'envoi au RPA');
         }
       },
       error: (err) => {
-        this.sendingRPA.set(false);
+        this.saving.set(false);
         this.error.set(err.error?.detail || 'Erreur lors de l\'envoi au RPA');
         console.error('Error sending to RPA:', err);
       }
     });
+  }
+
+  resetFormulaire(): void {
+    this.articles.set([]);
+    this.selectedFournisseur.set('');
+    this.lieuLivraison.set('');
+    this.commentaireBC.set('');
+    this.success.set(null);
+    this.nextArticleId = 1;
+    this.ajouterArticle();
   }
 
   retour(): void {

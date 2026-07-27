@@ -26,16 +26,6 @@
     <div class="alert alert-success">
       <span class="alert-icon">✓</span>
       {{ success() }}
-      @if (sendingRPA()) {
-        <span class="rpa-status">Envoi au RPA en cours...</span>
-      }
-    </div>
-  }
-
-  @if (rpaSuccess()) {
-    <div class="alert alert-success alert-rpa">
-      <span class="alert-icon">🤖</span>
-      {{ rpaSuccess() }}
     </div>
   }
 
@@ -286,52 +276,18 @@
           </div>
         }
 
-        <!-- Option RPA -->
-        <div class="rpa-option">
-          <label class="checkbox-label">
-            <input
-              type="checkbox"
-              [checked]="envoyerRPA()"
-              (change)="envoyerRPA.set($any($event.target).checked)">
-            <span class="checkbox-custom"></span>
-            <span class="checkbox-text">Envoyer au RPA (Sage X3)</span>
-          </label>
-          <span class="rpa-hint">Le BC sera créé dans Sage X3 automatiquement</span>
-        </div>
-
-        <!-- Bouton de validation -->
+        <!-- Bouton d'envoi au RPA -->
         <button
-          class="btn-generer"
-          [class.btn-rpa]="envoyerRPA()"
-          (click)="genererBC()"
-          [disabled]="saving() || sendingRPA() || articles().length === 0 || !selectedFournisseur()">
+          class="btn-generer btn-rpa"
+          (click)="envoyerAuRPA()"
+          [disabled]="saving() || articles().length === 0 || !selectedFournisseur()">
           @if (saving()) {
             <span class="spinner-btn"></span>
-            Création en cours...
-          } @else if (sendingRPA()) {
-            <span class="spinner-btn"></span>
-            Envoi au RPA...
-          } @else if (envoyerRPA()) {
-            Générer et Envoyer au RPA
+            Envoi au RPA en cours...
           } @else {
-            Générer le Bon de Commande
+            Envoyer au RPA (Sage X3)
           }
         </button>
-
-        <!-- Bouton pour envoyer manuellement au RPA (si BC déjà créé) -->
-        @if (numeroBCCree() && !envoyerRPA() && !rpaSuccess()) {
-          <button
-            class="btn-rpa-manual"
-            (click)="envoyerAuRPA(numeroBCCree()!)"
-            [disabled]="sendingRPA()">
-            @if (sendingRPA()) {
-              <span class="spinner-btn"></span>
-              Envoi...
-            } @else {
-              🤖 Envoyer au RPA maintenant
-            }
-          </button>
-        }
       </div>
     </div>
   </div>
