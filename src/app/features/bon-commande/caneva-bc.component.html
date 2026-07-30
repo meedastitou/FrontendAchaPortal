@@ -8,7 +8,7 @@
       </button>
       <div class="title-section">
         <h1>Caneva de Bon de Commande</h1>
-        <p class="subtitle">Saisie manuelle des articles</p>
+        <p class="subtitle">Sélection d'articles depuis une DA</p>
       </div>
     </div>
   </div>
@@ -40,167 +40,214 @@
           <input
             type="text"
             id="fournisseur"
-            [ngModel]="selectedFournisseur()"
-            (ngModelChange)="selectedFournisseur.set($event)"
+            [ngModel]="codeFournisseur()"
+            (ngModelChange)="codeFournisseur.set($event)"
             class="form-control"
             placeholder="Ex: FOURN001">
         </div>
       </div>
 
-      <!-- Articles -->
-      <div class="form-card articles-card">
-        <div class="card-header">
-          <h2>Articles</h2>
-          <button class="btn-add" (click)="ajouterArticle()">
-            <span class="icon">+</span>
-            Ajouter un article
-          </button>
-        </div>
+      <!-- Sélection DA -->
+      <div class="form-card">
+        <h2>Demandes d'Achat</h2>
 
-        @if (articles().length === 0) {
-          <div class="empty-articles">
-            <p>Aucun article ajouté. Cliquez sur "Ajouter un article" pour commencer.</p>
+        <!-- DA déjà ajoutées -->
+        @if (daSelections().length > 0) {
+          <div class="da-list-added">
+            <label class="da-list-label">DA ajoutées:</label>
+            <div class="da-chips">
+              @for (daItem of daSelections(); track daItem.numero_da) {
+                <span class="da-chip">
+                  {{ daItem.numero_da }}
+                  <span class="article-count">({{ daItem.articles.length }} articles)</span>
+                  <button type="button" class="chip-remove" (click)="supprimerDA(daItem.numero_da)" title="Supprimer cette DA">×</button>
+                </span>
+              }
+            </div>
           </div>
-        } @else {
-          <div class="articles-list">
-            @for (article of articles(); track article.id; let i = $index) {
-              <div class="article-row">
-                <div class="article-header">
-                  <span class="article-number">Article {{ i + 1 }}</span>
-                  <button class="btn-remove" (click)="supprimerArticle(article.id)" title="Supprimer">
-                    ×
-                  </button>
+        }
+
+        <!-- Ajouter une nouvelle DA -->
+        <div class="form-group da-add-section">
+          <label for="da">Ajouter une DA</label>
+          @if (loadingDA()) {
+            <div class="loading-inline">
+              <span class="spinner-small"></span>
+              Chargement des DA...
+            </div>
+          } @else {
+            <!-- Recherche DA -->
+            <div class="da-search">
+              <input
+                type="text"
+                [ngModel]="searchDA()"
+                (ngModelChange)="searchDA.set($event)"
+                class="form-control search-input"
+                placeholder="Rechercher une DA..."
+                [disabled]="loadingArticles()">
+              @if (searchDA()) {
+                <button type="button" class="search-clear" (click)="searchDA.set('')">×</button>
+              }
+            </div>
+
+            <div class="da-add-row">
+              <select
+                id="da"
+                [ngModel]="selectedDA()"
+                (ngModelChange)="selectedDA.set($event)"
+                class="form-control"
+                [disabled]="loadingArticles()"
+                size="6">
+                @for (da of daListDisponibles(); track da) {
+                  <option [value]="da">{{ da }}</option>
+                }
+              </select>
+              <button
+                type="button"
+                class="btn-add-da"
+                (click)="ajouterDA()"
+                [disabled]="!selectedDA() || loadingArticles()">
+                @if (loadingArticles()) {
+                  <span class="spinner-tiny"></span>
+                } @else {
+                  + Ajouter
+                }
+              </button>
+            </div>
+            @if (searchDA() && daListDisponibles().length === 0) {
+              <span class="field-hint warning">Aucune DA ne correspond à "{{ searchDA() }}"</span>
+            }
+          }
+          @if (daListDisponibles().length === 0 && !loadingDA() && daSelections().length === 0 && !searchDA()) {
+            <span class="field-hint warning">Aucune DA disponible</span>
+          }
+          @if (daListDisponibles().length === 0 && daSelections().length > 0 && !searchDA()) {
+            <span class="field-hint">Toutes les DA disponibles ont été ajoutées</span>
+          }
+        </div>
+      </div>
+
+      <!-- Articles par DA -->
+      @if (daSelections().length > 0) {
+        @for (daItem of daSelections(); track daItem.numero_da) {
+          <div class="form-card articles-card">
+            <div class="card-header">
+              <h2>
+                <span class="da-badge">{{ daItem.numero_da }}</span>
+                Articles
+              </h2>
+              <div class="header-actions">
+                <div class="selection-actions">
+                  <button class="btn-link" (click)="selectAll(daItem.numero_da)">Tout sélectionner</button>
+                  <span class="separator">|</span>
+                  <button class="btn-link" (click)="deselectAll(daItem.numero_da)">Tout désélectionner</button>
                 </div>
+                <button type="button" class="btn-remove-da" (click)="supprimerDA(daItem.numero_da)" title="Retirer cette DA">
+                  Retirer DA
+                </button>
+              </div>
+            </div>
 
-                <div class="article-fields">
-                  <!-- Ligne 1: Code article, Quantité, Prix -->
-                  <div class="field-row">
-                    <div class="form-group flex-1">
-                      <label>Code Article *</label>
-                      <input
-                        type="text"
-                        [(ngModel)]="article.code_article"
-                        class="form-control"
-                        placeholder="Ex: ART001"
-                        (input)="refreshArticles()">
-                    </div>
-                    <div class="form-group">
-                      <label>Quantité *</label>
-                      <input
-                        type="number"
-                        [(ngModel)]="article.quantite"
-                        class="form-control"
-                        min="0.001"
-                        step="0.001"
-                        (input)="refreshArticles()">
-                    </div>
-                    <div class="form-group">
-                      <label>Prix Unitaire HT *</label>
-                      <input
-                        type="number"
-                        [(ngModel)]="article.prix_unitaire_ht"
-                        class="form-control"
-                        min="0"
-                        step="0.01"
-                        placeholder="0.00"
-                        (input)="refreshArticles()">
-                    </div>
-                  </div>
-
-                  <!-- Ligne 2: Marque, Affaire -->
-                  <div class="field-row">
-                    <div class="form-group flex-1">
-                      <label>Marque</label>
-                      <input
-                        type="text"
-                        [(ngModel)]="article.marque"
-                        class="form-control"
-                        placeholder="Ex: Marque X">
-                    </div>
-                    <div class="form-group flex-1">
-                      <label>Affaire</label>
-                      <input
-                        type="text"
-                        [(ngModel)]="article.affaire"
-                        class="form-control"
-                        placeholder="Ex: AFF001">
-                    </div>
-                  </div>
-
-                  <!-- Ligne 3: DA (tags) -->
-                  <div class="field-row da-row">
-                    <div class="form-group flex-1">
-                      <label>Numéros de DA *</label>
-                      <div class="da-input-container">
-                        <div class="da-tags">
-                          @for (da of article.numeros_da; track da) {
-                            <span class="da-tag">
-                              {{ da }}
-                              <button class="da-remove" (click)="supprimerDA(article, da)">×</button>
-                            </span>
+            @if (daItem.articles.length === 0) {
+              <div class="empty-articles">
+                <p>Aucun article disponible pour cette DA.</p>
+              </div>
+            } @else {
+              <div class="articles-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th class="col-select"></th>
+                      <th class="col-article">Article</th>
+                      <th class="col-designation">Désignation</th>
+                      <th class="col-qte">Qté</th>
+                      <th class="col-prix">Prix Unitaire HT *</th>
+                      <th class="col-marque">Marque</th>
+                      <th class="col-affaire">Affaire</th>
+                      <th class="col-total">Total HT</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (sel of daItem.articles; track sel.article.code_article) {
+                      <tr [class.selected]="sel.selected" [class.has-error]="sel.prix_error">
+                        <td class="col-select">
+                          <input
+                            type="checkbox"
+                            [checked]="sel.selected"
+                            (change)="toggleSelection(sel)">
+                        </td>
+                        <td class="col-article">
+                          <span class="code">{{ sel.article.code_article }}</span>
+                        </td>
+                        <td class="col-designation">
+                          <span class="designation">{{ sel.article.designation_article }}</span>
+                          <span class="famille">{{ sel.article.famille }}</span>
+                        </td>
+                        <td class="col-qte">
+                          {{ sel.article.quantite }} {{ sel.article.unite }}
+                        </td>
+                        <td class="col-prix">
+                          <div class="prix-input-group">
+                            <input
+                              type="number"
+                              [(ngModel)]="sel.prix"
+                              (ngModelChange)="onPrixChange(sel)"
+                              class="form-control prix-input"
+                              [class.error]="sel.prix_error"
+                              min="0"
+                              step="0.01"
+                              placeholder="0.00">
+                            @if (sel.loading_tarif) {
+                              <span class="spinner-tiny"></span>
+                            } @else if (sel.tarif_max !== null) {
+                              <span class="tarif-max" [class.exceeded]="sel.prix > sel.tarif_max">
+                                Max: {{ formatMontant(sel.tarif_max) }}
+                              </span>
+                            }
+                          </div>
+                          @if (sel.prix_error) {
+                            <span class="error-message">{{ sel.prix_error }}</span>
                           }
-                        </div>
-                        <div class="da-add">
+                        </td>
+                        <td class="col-marque">
+                          @if (sel.loading_marques) {
+                            <span class="spinner-tiny"></span>
+                          } @else if (sel.marques_disponibles.length > 0) {
+                            <select
+                              [(ngModel)]="sel.marque"
+                              class="form-control marque-select">
+                              <option value="">-- Marque --</option>
+                              @for (marque of sel.marques_disponibles; track marque) {
+                                <option [value]="marque">{{ marque }}</option>
+                              }
+                            </select>
+                          } @else {
+                            <input
+                              type="text"
+                              [(ngModel)]="sel.marque"
+                              class="form-control"
+                              placeholder="Marque">
+                          }
+                        </td>
+                        <td class="col-affaire">
                           <input
                             type="text"
-                            [(ngModel)]="article.da_input"
-                            class="form-control da-input"
-                            placeholder="Saisir un numéro de DA puis Entrée"
-                            (keydown)="onDAKeydown($event, article)">
-                          <button class="btn-add-da" (click)="ajouterDA(article)">+</button>
-                        </div>
-                      </div>
-                      <span class="field-hint">
-                        @if (article.numeros_da.length > 1) {
-                          <span class="highlight">{{ article.numeros_da.length }} DA</span> - Cette ligne sera dupliquée pour chaque DA
-                        } @else if (article.numeros_da.length === 1) {
-                          1 DA associée
-                        } @else {
-                          Ajoutez au moins une DA
-                        }
-                      </span>
-                    </div>
-                  </div>
-
-                  <!-- Montant calculé -->
-                  <div class="article-total">
-                    <span class="total-label">Montant HT:</span>
-                    <span class="total-value">
-                      {{ formatMontant(article.quantite * article.prix_unitaire_ht * (article.numeros_da.length || 1)) }} MAD
-                    </span>
-                    @if (article.numeros_da.length > 1) {
-                      <span class="total-info">({{ article.numeros_da.length }} lignes)</span>
+                            [(ngModel)]="sel.affaire"
+                            class="form-control"
+                            placeholder="Affaire">
+                        </td>
+                        <td class="col-total">
+                          <span class="montant">{{ formatMontant(sel.article.quantite * sel.prix) }} MAD</span>
+                        </td>
+                      </tr>
                     }
-                  </div>
-                </div>
+                  </tbody>
+                </table>
               </div>
             }
           </div>
         }
-      </div>
-
-      <!-- Conditions -->
-      <div class="form-card">
-        <h2>Conditions</h2>
-        <div class="form-group">
-          <label>Lieu de livraison</label>
-          <input
-            type="text"
-            [ngModel]="lieuLivraison()"
-            (ngModelChange)="lieuLivraison.set($event)"
-            class="form-control"
-            placeholder="Ex: Entrepôt principal">
-        </div>
-        <div class="form-group">
-          <label>Commentaire</label>
-          <textarea
-            [ngModel]="commentaireBC()"
-            (ngModelChange)="commentaireBC.set($event)"
-            class="form-control"
-            rows="3"
-            placeholder="Commentaire ou instructions spéciales..."></textarea>
-        </div>
-      </div>
+      }
     </div>
 
     <!-- Panneau récapitulatif -->
@@ -209,70 +256,70 @@
         <h3>Récapitulatif</h3>
 
         <!-- Fournisseur -->
-        @if (selectedFournisseur()) {
+        @if (codeFournisseur()) {
           <div class="summary-item">
             <span class="summary-label">Fournisseur</span>
-            <span class="summary-value">{{ selectedFournisseur() }}</span>
+            <span class="summary-value">{{ codeFournisseur() }}</span>
+          </div>
+        }
+
+        <!-- DA -->
+        @if (daSelections().length > 0) {
+          <div class="summary-item">
+            <span class="summary-label">DA ({{ daSelections().length }})</span>
+            <div class="summary-da-list">
+              @for (daItem of daSelections(); track daItem.numero_da) {
+                <span class="da-tag">{{ daItem.numero_da }}</span>
+              }
+            </div>
           </div>
         }
 
         <!-- Stats -->
         <div class="summary-stats">
           <div class="stat">
-            <span class="stat-value">{{ articles().length }}</span>
-            <span class="stat-label">Article(s)</span>
-          </div>
-          <div class="stat">
-            <span class="stat-value">{{ totalLignes() }}</span>
-            <span class="stat-label">Ligne(s) BC</span>
-          </div>
-          <div class="stat">
-            <span class="stat-value">{{ dasUniques().length }}</span>
-            <span class="stat-label">DA unique(s)</span>
+            <span class="stat-value">{{ articlesSelectionnes().length }}</span>
+            <span class="stat-label">Article(s) sélectionné(s)</span>
           </div>
         </div>
 
-        <!-- DAs -->
-        @if (dasUniques().length > 0) {
-          <div class="summary-das">
-            <span class="summary-label">DA incluses:</span>
-            <div class="da-chips">
-              @for (da of dasUniques(); track da) {
-                <span class="da-chip">{{ da }}</span>
+        <!-- Liste articles sélectionnés -->
+        @if (articlesSelectionnes().length > 0) {
+          <div class="selected-articles">
+            <span class="summary-label">Articles:</span>
+            <ul class="article-list">
+              @for (sel of articlesSelectionnes(); track sel.article.code_article) {
+                <li>
+                  <span class="article-code">{{ sel.article.code_article }}</span>
+                  <span class="article-montant">{{ formatMontant(sel.article.quantite * sel.prix) }} MAD</span>
+                </li>
               }
-            </div>
+            </ul>
           </div>
         }
 
-        <!-- Totaux -->
+        <!-- Total -->
         <div class="summary-totals">
-          <div class="total-row">
+          <div class="total-row total-ht">
             <span>Total HT</span>
             <span class="montant">{{ formatMontant(totalHT()) }} MAD</span>
           </div>
-          <div class="total-row">
-            <span>TVA (20%)</span>
-            <span class="montant">{{ formatMontant(totalTVA()) }} MAD</span>
-          </div>
-          <div class="total-row total-ttc">
-            <span>Total TTC</span>
-            <span class="montant">{{ formatMontant(totalTTC()) }} MAD</span>
-          </div>
         </div>
 
-        <!-- Preview des lignes -->
-        @if (lignesPreview().length > 0 && lignesPreview().length <= 10) {
-          <div class="preview-section">
-            <h4>Aperçu des lignes</h4>
-            <div class="preview-table">
-              @for (ligne of lignesPreview(); track $index) {
-                <div class="preview-row">
-                  <span class="preview-article">{{ ligne.code_article }}</span>
-                  <span class="preview-da">{{ ligne.numero_da }}</span>
-                  <span class="preview-montant">{{ formatMontant(ligne.montant_ht) }}</span>
-                </div>
+        <!-- Validation -->
+        @if (!canSubmit() && articlesSelectionnes().length > 0) {
+          <div class="validation-warnings">
+            @if (!codeFournisseur().trim()) {
+              <p class="warning">⚠ Code fournisseur requis</p>
+            }
+            @for (sel of articlesSelectionnes(); track sel.article.code_article) {
+              @if (sel.prix <= 0) {
+                <p class="warning">⚠ Prix requis pour {{ sel.article.code_article }}</p>
               }
-            </div>
+              @if (sel.prix_error) {
+                <p class="warning">⚠ {{ sel.article.code_article }}: {{ sel.prix_error }}</p>
+              }
+            }
           </div>
         }
 
@@ -280,7 +327,7 @@
         <button
           class="btn-generer btn-rpa"
           (click)="envoyerAuRPA()"
-          [disabled]="saving() || articles().length === 0 || !selectedFournisseur()">
+          [disabled]="saving() || !canSubmit()">
           @if (saving()) {
             <span class="spinner-btn"></span>
             Envoi au RPA en cours...

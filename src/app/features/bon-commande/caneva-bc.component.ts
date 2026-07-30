@@ -5,18 +5,32 @@ import { FormsModule } from '@angular/forms';
 import { BonCommandeService } from '../../core/services/bon-commande.service';
 import { LigneCanevaBCCreate, GenerateCanevaBCRequest, EnvoyerBCRPAResponse } from '../../core/models/bon-commande.model';
 
-interface ArticleSaisie {
-  id: number;
+interface ArticleX3 {
+  numero_da: string;
   code_article: string;
+  designation_article: string;
   quantite: number;
-  prix_unitaire_ht: number;
+  marque: string;
+  unite: string;
+  famille: string;
+}
+
+interface ArticleSelection {
+  article: ArticleX3;
+  selected: boolean;
+  prix: number;
   marque: string;
   affaire: string;
-  tva_pourcent: number;
-  numeros_da: string[];
-  commentaire: string;
-  // Pour l'UI
-  da_input: string;
+  tarif_max: number | null;
+  marques_disponibles: string[];
+  loading_tarif: boolean;
+  loading_marques: boolean;
+  prix_error: string | null;
+}
+
+interface DASelection {
+  numero_da: string;
+  articles: ArticleSelection[];
 }
 
 @Component({
@@ -27,86 +41,60 @@ interface ArticleSaisie {
   styleUrl: './caneva-bc.component.scss'
 })
 export class CanevaBCComponent implements OnInit {
-  // Fournisseur (saisie manuelle)
-  selectedFournisseur = signal<string>('');
+  // Fournisseur
+  codeFournisseur = signal<string>('');
 
-  // Articles (lignes à saisir)
-  articles = signal<ArticleSaisie[]>([]);
-  nextArticleId = 1;
+  // DA
+  daList = signal<string[]>([]);
+  loadingDA = signal(false);
+  selectedDA = signal<string>('');  // DA en cours de sélection (dropdown)
+  daSelections = signal<DASelection[]>([]);  // Liste des DA ajoutées
+  searchDA = signal<string>('');  // Recherche DA
 
-  // Conditions BC
-  lieuLivraison = signal('');
-  commentaireBC = signal('');
+  // Articles (tous les articles de toutes les DA)
+  loadingArticles = signal(false);
 
   // État
   saving = signal(false);
   error = signal<string | null>(null);
   success = signal<string | null>(null);
 
-  // Computed: Nombre total de lignes (avec duplication par DA)
-  totalLignes = computed(() => {
-    return this.articles().reduce((sum, art) => sum + Math.max(art.numeros_da.length, 1), 0);
+  // Computed: Tous les articles de toutes les DA
+  articles = computed(() => {
+    return this.daSelections().flatMap(da => da.articles);
+  });
+
+  // Computed: Articles sélectionnés
+  articlesSelectionnes = computed(() => {
+    return this.articles().filter(a => a.selected);
   });
 
   // Computed: Total HT
   totalHT = computed(() => {
-    let total = 0;
-    for (const art of this.articles()) {
-      const nbDa = Math.max(art.numeros_da.length, 1);
-      total += art.quantite * art.prix_unitaire_ht * nbDa;
-    }
-    return total;
+    return this.articlesSelectionnes().reduce((sum, a) => sum + (a.article.quantite * a.prix), 0);
   });
 
-  // Computed: Total TVA
-  totalTVA = computed(() => {
-    let tva = 0;
-    for (const art of this.articles()) {
-      const nbDa = Math.max(art.numeros_da.length, 1);
-      tva += art.quantite * art.prix_unitaire_ht * nbDa * (art.tva_pourcent / 100);
-    }
-    return tva;
+  // Computed: DA disponibles (non encore ajoutées + filtrées par recherche)
+  daListDisponibles = computed(() => {
+    const alreadyAdded = this.daSelections().map(d => d.numero_da);
+    const search = this.searchDA().trim().toUpperCase();
+    return this.daList()
+      .filter(da => !alreadyAdded.includes(da))
+      .filter(da => !search || da.toUpperCase().includes(search));
   });
 
-  // Computed: Total TTC
-  totalTTC = computed(() => this.totalHT() + this.totalTVA());
+  // Computed: Validation
+  canSubmit = computed(() => {
+    const selected = this.articlesSelectionnes();
+    if (selected.length === 0) return false;
+    if (!this.codeFournisseur().trim()) return false;
 
-  // Computed: Toutes les DA uniques
-  dasUniques = computed(() => {
-    const das = new Set<string>();
-    for (const art of this.articles()) {
-      for (const da of art.numeros_da) {
-        das.add(da);
-      }
+    // Vérifier que tous les articles sélectionnés ont un prix valide
+    for (const a of selected) {
+      if (a.prix <= 0) return false;
+      if (a.prix_error) return false;
     }
-    return Array.from(das);
-  });
-
-  // Computed: Preview des lignes dupliquées
-  lignesPreview = computed(() => {
-    const lignes: { code_article: string; numero_da: string; quantite: number; prix_ht: number; montant_ht: number }[] = [];
-    for (const art of this.articles()) {
-      if (art.numeros_da.length === 0) {
-        lignes.push({
-          code_article: art.code_article,
-          numero_da: '(Aucune DA)',
-          quantite: art.quantite,
-          prix_ht: art.prix_unitaire_ht,
-          montant_ht: art.quantite * art.prix_unitaire_ht
-        });
-      } else {
-        for (const da of art.numeros_da) {
-          lignes.push({
-            code_article: art.code_article,
-            numero_da: da,
-            quantite: art.quantite,
-            prix_ht: art.prix_unitaire_ht,
-            montant_ht: art.quantite * art.prix_unitaire_ht
-          });
-        }
-      }
-    }
-    return lignes;
+    return true;
   });
 
   constructor(
@@ -115,115 +103,178 @@ export class CanevaBCComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.ajouterArticle(); // Ajouter une première ligne vide
+    this.loadDAList();
   }
 
-  ajouterArticle(): void {
-    const newArticle: ArticleSaisie = {
-      id: this.nextArticleId++,
-      code_article: '',
-      quantite: 1,
-      prix_unitaire_ht: 0,
-      marque: '',
-      affaire: '',
-      tva_pourcent: 20,
-      numeros_da: [],
-      commentaire: '',
-      da_input: ''
-    };
-    this.articles.update(arts => [...arts, newArticle]);
-  }
-
-  supprimerArticle(id: number): void {
-    this.articles.update(arts => arts.filter(a => a.id !== id));
-  }
-
-  ajouterDA(article: ArticleSaisie): void {
-    const daValue = article.da_input.trim().toUpperCase();
-    if (daValue && !article.numeros_da.includes(daValue)) {
-      article.numeros_da.push(daValue);
-      article.da_input = '';
-      // Trigger signal update
-      this.articles.update(arts => [...arts]);
-    }
-  }
-
-  supprimerDA(article: ArticleSaisie, da: string): void {
-    article.numeros_da = article.numeros_da.filter(d => d !== da);
-    // Trigger signal update
-    this.articles.update(arts => [...arts]);
-  }
-
-  onDAKeydown(event: KeyboardEvent, article: ArticleSaisie): void {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      this.ajouterDA(article);
-    }
-  }
-
-  validerFormulaire(): boolean {
-    // Vérifier le fournisseur
-    if (!this.selectedFournisseur()) {
-      this.error.set('Veuillez sélectionner un fournisseur');
-      return false;
-    }
-
-    // Vérifier qu'il y a au moins un article
-    if (this.articles().length === 0) {
-      this.error.set('Veuillez ajouter au moins un article');
-      return false;
-    }
-
-    // Vérifier chaque article
-    for (const art of this.articles()) {
-      if (!art.code_article.trim()) {
-        this.error.set('Le code article est obligatoire pour tous les articles');
-        return false;
+  loadDAList(): void {
+    this.loadingDA.set(true);
+    this.bcService.getCanevaDADisponibles().subscribe({
+      next: (response) => {
+        this.daList.set(response.da_list);
+        this.loadingDA.set(false);
+      },
+      error: (err) => {
+        console.error('Error loading DA list:', err);
+        this.loadingDA.set(false);
+        this.error.set('Erreur lors du chargement des DA');
       }
-      if (art.quantite <= 0) {
-        this.error.set('La quantité doit être supérieure à 0');
-        return false;
-      }
-      if (art.prix_unitaire_ht <= 0) {
-        this.error.set('Le prix unitaire doit être supérieur à 0');
-        return false;
-      }
-      if (art.numeros_da.length === 0) {
-        this.error.set('Chaque article doit avoir au moins une DA associée');
-        return false;
-      }
+    });
+  }
+
+  onDAChange(): void {
+    // Cette méthode n'ajoute plus automatiquement la DA
+    // Elle est appelée quand le dropdown change
+  }
+
+  ajouterDA(): void {
+    const da = this.selectedDA();
+    if (!da) {
+      return;
     }
 
-    return true;
+    // Vérifier si la DA n'est pas déjà ajoutée
+    if (this.daSelections().some(d => d.numero_da === da)) {
+      this.error.set('Cette DA est déjà ajoutée');
+      return;
+    }
+
+    this.loadingArticles.set(true);
+    this.error.set(null);
+
+    this.bcService.getCanevaArticlesDA(da).subscribe({
+      next: (response) => {
+        const selections: ArticleSelection[] = response.articles.map(art => ({
+          article: art,
+          selected: false,
+          prix: 0,
+          marque: art.marque || '',
+          affaire: '',
+          tarif_max: null,
+          marques_disponibles: [],
+          loading_tarif: false,
+          loading_marques: false,
+          prix_error: null
+        }));
+
+        // Ajouter la DA à la liste
+        const newDASelection: DASelection = {
+          numero_da: da,
+          articles: selections
+        };
+        this.daSelections.update(das => [...das, newDASelection]);
+        this.loadingArticles.set(false);
+
+        // Réinitialiser le dropdown et la recherche
+        this.selectedDA.set('');
+        this.searchDA.set('');
+
+        // Charger tarifs et marques pour chaque article
+        for (const sel of selections) {
+          this.loadTarifMax(sel);
+          this.loadMarques(sel);
+        }
+      },
+      error: (err) => {
+        console.error('Error loading articles:', err);
+        this.loadingArticles.set(false);
+        this.error.set('Erreur lors du chargement des articles');
+      }
+    });
+  }
+
+  supprimerDA(numeroDA: string): void {
+    this.daSelections.update(das => das.filter(d => d.numero_da !== numeroDA));
+  }
+
+  loadTarifMax(selection: ArticleSelection): void {
+    selection.loading_tarif = true;
+    this.bcService.getCanevaTarifMax(selection.article.code_article).subscribe({
+      next: (response) => {
+        selection.tarif_max = response.tarif_max;
+        selection.loading_tarif = false;
+        this.daSelections.update(das => [...das]);
+      },
+      error: () => {
+        selection.loading_tarif = false;
+        this.daSelections.update(das => [...das]);
+      }
+    });
+  }
+
+  loadMarques(selection: ArticleSelection): void {
+    selection.loading_marques = true;
+    this.bcService.getCanevaMarques(selection.article.code_article).subscribe({
+      next: (response) => {
+        selection.marques_disponibles = response.marques;
+        selection.loading_marques = false;
+        this.daSelections.update(das => [...das]);
+      },
+      error: () => {
+        selection.loading_marques = false;
+        this.daSelections.update(das => [...das]);
+      }
+    });
+  }
+
+  onPrixChange(selection: ArticleSelection): void {
+    if (selection.tarif_max !== null && selection.prix > selection.tarif_max) {
+      selection.prix_error = `Prix max: ${this.formatMontant(selection.tarif_max)} MAD`;
+    } else {
+      selection.prix_error = null;
+    }
+    this.daSelections.update(das => [...das]);
+  }
+
+  toggleSelection(selection: ArticleSelection): void {
+    selection.selected = !selection.selected;
+    this.daSelections.update(das => [...das]);
+  }
+
+  selectAll(numeroDA?: string): void {
+    this.daSelections.update(das => das.map(da => {
+      if (numeroDA && da.numero_da !== numeroDA) return da;
+      return {
+        ...da,
+        articles: da.articles.map(a => ({ ...a, selected: true }))
+      };
+    }));
+  }
+
+  deselectAll(numeroDA?: string): void {
+    this.daSelections.update(das => das.map(da => {
+      if (numeroDA && da.numero_da !== numeroDA) return da;
+      return {
+        ...da,
+        articles: da.articles.map(a => ({ ...a, selected: false }))
+      };
+    }));
   }
 
   envoyerAuRPA(): void {
     this.error.set(null);
     this.success.set(null);
 
-    if (!this.validerFormulaire()) {
+    if (!this.canSubmit()) {
+      this.error.set('Veuillez corriger les erreurs avant d\'envoyer');
       return;
     }
 
     this.saving.set(true);
 
-    // Construire la requête
-    const lignes: LigneCanevaBCCreate[] = this.articles().map(art => ({
-      code_article: art.code_article.trim().toUpperCase(),
-      quantite: art.quantite,
-      prix_unitaire_ht: art.prix_unitaire_ht,
-      marque: art.marque.trim() || null,
-      affaire: art.affaire.trim() || null,
-      tva_pourcent: art.tva_pourcent,
-      numeros_da: art.numeros_da,
-      commentaire: art.commentaire.trim() || null
+    const lignes: LigneCanevaBCCreate[] = this.articlesSelectionnes().map(sel => ({
+      code_article: sel.article.code_article,
+      quantite: sel.article.quantite,
+      prix_unitaire_ht: sel.prix,
+      marque: sel.marque || null,
+      affaire: sel.affaire || null,
+      tva_pourcent: 20,
+      numeros_da: [sel.article.numero_da],
+      commentaire: null
     }));
 
     const request: GenerateCanevaBCRequest = {
-      code_fournisseur: this.selectedFournisseur().trim().toUpperCase(),
-      lignes,
-      lieu_livraison: this.lieuLivraison() || undefined,
-      commentaire: this.commentaireBC() || undefined
+      code_fournisseur: this.codeFournisseur().trim().toUpperCase(),
+      lignes
     };
 
     this.bcService.genererCanevaBC(request).subscribe({
@@ -231,7 +282,6 @@ export class CanevaBCComponent implements OnInit {
         this.saving.set(false);
         if (response.success) {
           this.success.set(`Envoyé au RPA avec succès! (${response.nb_lignes} lignes) - ID: ${response.rpa_request_id}`);
-          // Réinitialiser le formulaire après 3 secondes
           setTimeout(() => {
             this.resetFormulaire();
           }, 3000);
@@ -242,19 +292,15 @@ export class CanevaBCComponent implements OnInit {
       error: (err) => {
         this.saving.set(false);
         this.error.set(err.error?.detail || 'Erreur lors de l\'envoi au RPA');
-        console.error('Error sending to RPA:', err);
       }
     });
   }
 
   resetFormulaire(): void {
-    this.articles.set([]);
-    this.selectedFournisseur.set('');
-    this.lieuLivraison.set('');
-    this.commentaireBC.set('');
+    this.codeFournisseur.set('');
+    this.selectedDA.set('');
+    this.daSelections.set([]);
     this.success.set(null);
-    this.nextArticleId = 1;
-    this.ajouterArticle();
   }
 
   retour(): void {
@@ -266,10 +312,5 @@ export class CanevaBCComponent implements OnInit {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(montant);
-  }
-
-  // Méthode pour forcer la mise à jour du signal articles
-  refreshArticles(): void {
-    this.articles.update(arts => [...arts]);
   }
 }
