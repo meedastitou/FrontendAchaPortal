@@ -8,6 +8,9 @@
 }
 
 .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 24px;
 }
 
@@ -15,6 +18,26 @@
   margin: 0;
   font-size: 24px;
   color: #1f2937;
+}
+
+.btn-create {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #1d4ed8;
+  }
 }
 
 /* Filters */
@@ -175,6 +198,11 @@
 .fournisseur-code {
   font-size: 12px;
   color: #6b7280;
+}
+.rfq-created-by {
+  font-size: 12px;
+  color: #6b7280;
+  background: #dbeafe;
 }
 
 .badge {

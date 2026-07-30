@@ -28,6 +28,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/rfq/rfq-list.component').then(m => m.RFQListComponent)
       },
       {
+        path: 'rfq/creation',
+        loadComponent: () => import('./features/rfq/creation-rfq.component').then(m => m.CreationRFQComponent)
+      },
+      {
         path: 'rfq/:id',
         loadComponent: () => import('./features/rfq/rfq-detail.component').then(m => m.RFQDetailComponent)
       },
