@@ -32,6 +32,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/rfq/rfq-list.component').then(m => m.RFQListComponent)
       },
       {
+        path: 'rfq/creation',
+        loadComponent: () => import('./features/rfq/creation-rfq.component').then(m => m.CreationRFQComponent)
+      },
+      {
         path: 'rfq/:id',
         loadComponent: () => import('./features/rfq/rfq-detail.component').then(m => m.RFQDetailComponent)
       },
@@ -71,10 +75,10 @@ export const routes: Routes = [
         path: 'bon-commande',
         loadComponent: () => import('./features/bon-commande/bon-commande-list.component').then(m => m.BonCommandeListComponent)
       },
-      {
-        path: 'bon-commande/caneva',
-        loadComponent: () => import('./features/bon-commande/caneva-bc.component').then(m => m.CanevaBCComponent)
-      },
+      // {
+      //   path: 'bon-commande/caneva',
+      //   loadComponent: () => import('./features/bon-commande/caneva-bc.component').then(m => m.CanevaBCComponent)
+      // },
       {
         path: 'bon-commande/preparer/:codeFournisseur',
         loadComponent: () => import('./features/bon-commande/bon-commande-preparer.component').then(m => m.BonCommandePreparerComponent)

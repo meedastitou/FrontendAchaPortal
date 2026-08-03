@@ -37,7 +37,7 @@ export interface ReponseFilters {
 })
 export class ReponseService {
   private readonly API_URL = `${environment.apiUrl}/reponses`;
-  private readonly API_URL_DEVIS = `${environment.apiUrl}` /*`${environment.apiUrlDevis}`;*/
+  private readonly API_URL_DEVIS = `${environment.apiUrlDevis}`;
 
   constructor(private http: HttpClient) {}
 

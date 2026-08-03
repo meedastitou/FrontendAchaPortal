@@ -22,6 +22,8 @@ export interface RFQ {
   date_envoi: string;
   date_limite_reponse: string | null;
   statut: StatutRFQ;
+  manuel: boolean;
+  created_by: string | null;
   nb_relances: number;
   date_derniere_relance: string | null;
   date_ouverture_email: string | null;
@@ -54,3 +56,78 @@ export interface RFQFilters {
   numero_da?: string;
 }
 
+// ──────────────────────────────────────────────────────────
+// Création manuelle de RFQ
+// ──────────────────────────────────────────────────────────
+
+export interface FournisseurSelectionRFQ {
+  code_fournisseur: string;
+  nom_fournisseur: string;
+  email: string | null;
+  blacklist: boolean;
+}
+
+export interface FournisseurSearchResponse {
+  fournisseurs: FournisseurSelectionRFQ[];
+  total: number;
+}
+
+export interface DADisponibleRFQ {
+  numero_da: string;
+  nb_articles: number;
+}
+
+export interface DAListResponseRFQ {
+  da_list: DADisponibleRFQ[];
+  total: number;
+}
+
+export interface ArticleDACreationRFQ {
+  id: number;
+  numero_da: string;
+  code_article: string;
+  designation_article: string | null;
+  quantite: number;
+  unite: string | null;
+  marque_souhaitee: string | null;
+}
+
+export interface ArticlesDAListResponseRFQ {
+  numero_da: string;
+  articles: ArticleDACreationRFQ[];
+  total: number;
+}
+
+export interface ArticleSelectionCreate {
+  numero_da: string;
+  code_article: string;
+  designation_article?: string | null;
+  quantite: number;
+  unite?: string | null;
+  marque_souhaitee?: string | null;
+}
+
+export interface CreerRFQManuelRequest {
+  fournisseurs: string[];
+  articles: ArticleSelectionCreate[];
+  date_limite_reponse?: string | null;
+}
+
+export interface RFQCreated {
+  uuid: string;
+  numero_rfq: string;
+  code_fournisseur: string;
+  nom_fournisseur: string | null;
+  email: string | null;
+  nb_articles: number;
+  email_envoye: boolean;
+  email_error: string | null;
+}
+
+export interface CreerRFQManuelResponse {
+  success: boolean;
+  message: string;
+  rfqs_crees: RFQCreated[];
+  nb_rfqs: number;
+  nb_emails_envoyes: number;
+}

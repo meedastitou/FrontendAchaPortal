@@ -1,0 +1,336 @@
+<div class="creation-rfq-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <button class="btn-back" (click)="retour()">
+        <span class="arrow">&larr;</span>
+        Retour
+      </button>
+      <div class="title-section">
+        <h1>Création manuelle de RFQ</h1>
+        <p class="subtitle">Sélectionnez les fournisseurs et les articles à coter</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  @if (error()) {
+    <div class="alert alert-error">
+      <span class="alert-icon">&#9888;</span>
+      {{ error() }}
+      <button class="alert-close" (click)="error.set(null)">&times;</button>
+    </div>
+  }
+
+  @if (success()) {
+    <div class="alert alert-success">
+      <span class="alert-icon">&#10003;</span>
+      {{ success() }}
+    </div>
+  }
+
+  <div class="main-content">
+    <!-- Formulaire principal -->
+    <div class="form-section">
+
+      <!-- Étape 1: Sélection des fournisseurs -->
+      <div class="form-card">
+        <div class="card-header">
+          <h2>1. Fournisseurs</h2>
+          @if (fournisseursSelectionnes().length > 0) {
+            <span class="badge">{{ fournisseursSelectionnes().length }} sélectionné(s)</span>
+          }
+        </div>
+
+        <!-- Fournisseurs sélectionnés -->
+        @if (fournisseursSelectionnes().length > 0) {
+          <div class="selected-items">
+            @for (f of fournisseursSelectionnes(); track f.code_fournisseur) {
+              <div class="selected-chip">
+                <div class="chip-content">
+                  <span class="chip-code">{{ f.code_fournisseur }}</span>
+                  <span class="chip-name">{{ f.nom_fournisseur }}</span>
+                  @if (f.email) {
+                    <span class="chip-email">{{ f.email }}</span>
+                  }
+                </div>
+                <button class="chip-remove" (click)="supprimerFournisseur(f)">&times;</button>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Recherche fournisseurs -->
+        <div class="search-section">
+          <div class="search-input-group">
+            <input
+              type="text"
+              [ngModel]="searchFournisseur()"
+              (ngModelChange)="searchFournisseur.set($event); onSearchFournisseur()"
+              class="form-control"
+              placeholder="Rechercher par code ou nom...">
+            @if (searchFournisseur()) {
+              <button class="search-clear" (click)="searchFournisseur.set(''); loadFournisseurs()">&times;</button>
+            }
+          </div>
+
+          @if (loadingFournisseurs()) {
+            <div class="loading-inline">
+              <span class="spinner-small"></span>
+              Chargement...
+            </div>
+          } @else {
+            <div class="items-list">
+              @for (f of fournisseursDisponibles(); track f.code_fournisseur) {
+                <div class="item-row" (click)="ajouterFournisseur(f)">
+                  <div class="item-info">
+                    <span class="item-code">{{ f.code_fournisseur }}</span>
+                    <span class="item-name">{{ f.nom_fournisseur }}</span>
+                  </div>
+                  @if (f.email) {
+                    <span class="item-email">{{ f.email }}</span>
+                  }
+                  <button class="btn-add">+</button>
+                </div>
+              } @empty {
+                <div class="empty-message">
+                  @if (searchFournisseur()) {
+                    Aucun fournisseur trouvé pour "{{ searchFournisseur() }}"
+                  } @else {
+                    Aucun fournisseur disponible
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Étape 2: Sélection des DA et articles -->
+      <div class="form-card">
+        <div class="card-header">
+          <h2>2. Demandes d'Achat et Articles</h2>
+          @if (articlesSelectionnes().length > 0) {
+            <span class="badge">{{ articlesSelectionnes().length }} article(s)</span>
+          }
+        </div>
+
+        <!-- DA sélectionnées (chips) -->
+        @if (daSelections().length > 0) {
+          <div class="da-chips">
+            @for (da of daSelections(); track da.numero_da) {
+              <span class="da-chip">
+                {{ da.numero_da }}
+                <span class="article-count">({{ da.articles.length }} articles)</span>
+                <button class="chip-remove" (click)="supprimerDA(da.numero_da)">&times;</button>
+              </span>
+            }
+          </div>
+        }
+
+        <!-- Recherche et ajout DA -->
+        <div class="search-section">
+          <label>Ajouter une DA:</label>
+          <div class="search-input-group">
+            <input
+              type="text"
+              [ngModel]="searchDA()"
+              (ngModelChange)="searchDA.set($event); onSearchDA()"
+              class="form-control"
+              placeholder="Rechercher une DA..."
+              [disabled]="loadingArticles()">
+            @if (searchDA()) {
+              <button class="search-clear" (click)="searchDA.set(''); loadDA()">&times;</button>
+            }
+          </div>
+
+          @if (loadingDA()) {
+            <div class="loading-inline">
+              <span class="spinner-small"></span>
+              Chargement...
+            </div>
+          } @else if (loadingArticles()) {
+            <div class="loading-inline">
+              <span class="spinner-small"></span>
+              Chargement des articles...
+            </div>
+          } @else {
+            <div class="da-list">
+              @for (da of daListFiltrees(); track da.numero_da) {
+                <div class="da-row" (click)="ajouterDA(da)">
+                  <span class="da-numero">{{ da.numero_da }}</span>
+                  <span class="da-count">{{ da.nb_articles }} articles</span>
+                  <button class="btn-add">+ Ajouter</button>
+                </div>
+              } @empty {
+                <div class="empty-message">
+                  @if (searchDA() && daDisponibles().length > 0) {
+                    Aucune DA ne correspond à "{{ searchDA() }}"
+                  } @else if (daSelections().length > 0 && daListFiltrees().length === 0) {
+                    Toutes les DA disponibles ont été ajoutées
+                  } @else {
+                    Aucune DA disponible
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Articles par DA -->
+      @for (daItem of daSelections(); track daItem.numero_da) {
+        <div class="form-card articles-card">
+          <div class="card-header">
+            <h2>
+              <span class="da-badge">{{ daItem.numero_da }}</span>
+              Articles
+            </h2>
+            <div class="header-actions">
+              <div class="selection-actions">
+                <button class="btn-link" (click)="selectAllDA(daItem.numero_da)">Tout sélectionner</button>
+                <span class="separator">|</span>
+                <button class="btn-link" (click)="deselectAllDA(daItem.numero_da)">Tout désélectionner</button>
+              </div>
+              <button class="btn-remove-da" (click)="supprimerDA(daItem.numero_da)">
+                Retirer DA
+              </button>
+            </div>
+          </div>
+
+          @if (daItem.articles.length === 0) {
+            <div class="empty-articles">
+              <p>Aucun article disponible pour cette DA.</p>
+            </div>
+          } @else {
+            <div class="articles-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th class="col-select"></th>
+                    <th class="col-article">Article</th>
+                    <th class="col-designation">Désignation</th>
+                    <th class="col-qte">Quantité</th>
+                    <th class="col-unite">Unité</th>
+                    <th class="col-marque">Marque souhaitée</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (sel of daItem.articles; track sel.article.id) {
+                    <tr [class.selected]="sel.selected" (click)="toggleArticle(sel)">
+                      <td class="col-select">
+                        <input
+                          type="checkbox"
+                          [checked]="sel.selected"
+                          (change)="toggleArticle(sel)"
+                          (click)="$event.stopPropagation()">
+                      </td>
+                      <td class="col-article">
+                        <span class="code">{{ sel.article.code_article }}</span>
+                      </td>
+                      <td class="col-designation">
+                        {{ sel.article.designation_article || '-' }}
+                      </td>
+                      <td class="col-qte">
+                        {{ sel.article.quantite }}
+                      </td>
+                      <td class="col-unite">
+                        {{ sel.article.unite || '-' }}
+                      </td>
+                      <td class="col-marque">
+                        {{ sel.article.marque_souhaitee || '-' }}
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Panneau récapitulatif -->
+    <div class="summary-panel">
+      <div class="summary-card sticky">
+        <h3>Récapitulatif</h3>
+
+        <!-- Fournisseurs -->
+        <div class="summary-section">
+          <span class="summary-label">Fournisseurs ({{ fournisseursSelectionnes().length }})</span>
+          @if (fournisseursSelectionnes().length > 0) {
+            <div class="summary-list">
+              @for (f of fournisseursSelectionnes(); track f.code_fournisseur) {
+                <span class="summary-tag">{{ f.code_fournisseur }}</span>
+              }
+            </div>
+          } @else {
+            <span class="summary-empty">Aucun fournisseur sélectionné</span>
+          }
+        </div>
+
+        <!-- Articles -->
+        <div class="summary-section">
+          <span class="summary-label">Articles ({{ articlesSelectionnes().length }})</span>
+          @if (articlesSelectionnes().length > 0) {
+            <div class="summary-list">
+              @for (sel of articlesSelectionnes(); track sel.article.id) {
+                <div class="summary-article">
+                  <span class="article-code">{{ sel.article.code_article }}</span>
+                  <span class="article-qty">x{{ sel.article.quantite }}</span>
+                </div>
+              }
+            </div>
+          } @else {
+            <span class="summary-empty">Aucun article sélectionné</span>
+          }
+        </div>
+
+        <!-- Date limite -->
+        <div class="summary-section">
+          <label class="summary-label" for="dateLimite">Date limite de réponse</label>
+          <input
+            type="date"
+            id="dateLimite"
+            [ngModel]="dateLimiteReponse()"
+            (ngModelChange)="dateLimiteReponse.set($event)"
+            class="form-control">
+        </div>
+
+        <!-- Résultat prévu -->
+        @if (canSubmit()) {
+          <div class="summary-result">
+            <p>
+              <strong>{{ fournisseursSelectionnes().length }}</strong> RFQ seront créées,
+              chacune avec <strong>{{ articlesSelectionnes().length }}</strong> article(s)
+            </p>
+          </div>
+        }
+
+        <!-- Bouton de création -->
+        <button
+          class="btn-creer"
+          (click)="creerRFQ()"
+          [disabled]="saving() || !canSubmit()">
+          @if (saving()) {
+            <span class="spinner-btn"></span>
+            Création en cours...
+          } @else {
+            Créer les RFQ
+          }
+        </button>
+
+        @if (!canSubmit()) {
+          <div class="validation-hints">
+            @if (fournisseursSelectionnes().length === 0) {
+              <p class="hint">&#9888; Sélectionnez au moins un fournisseur</p>
+            }
+            @if (articlesSelectionnes().length === 0) {
+              <p class="hint">&#9888; Sélectionnez au moins un article</p>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

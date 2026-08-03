@@ -1,6 +1,9 @@
 <div class="page">
   <div class="page-header">
     <h1>Demandes de Cotation (RFQ)</h1>
+    <a routerLink="/rfq/creation" class="btn-create">
+      + Créer une RFQ
+    </a>
   </div>
 
   <!-- Filtres -->
@@ -118,6 +121,12 @@
                 <a [routerLink]="['/rfq', rfq.id]" class="code-link">
                   {{ rfq.numero_rfq }}
                 </a>
+                @if ( rfq.created_by) {
+                  <br>
+                  <span class="badge rfq-created-by">
+                    {{ rfq.created_by }}
+                  </span>
+                }
               </td>
               <td>
                 <div class="fournisseur-cell">

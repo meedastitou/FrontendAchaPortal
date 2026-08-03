@@ -115,6 +115,52 @@ export class BonCommandeService {
   }
 
   /**
+   * Caneva BC - Liste des DA disponibles depuis X3
+   */
+  getCanevaDADisponibles(): Observable<{ da_list: string[]; total: number }> {
+    return this.http.get<{ da_list: string[]; total: number }>(
+      `${this.apiUrl}/caneva/da-disponibles`
+    );
+  }
+
+  /**
+   * Caneva BC - Articles d'une DA depuis X3
+   */
+  getCanevaArticlesDA(numeroDA: string): Observable<{
+    numero_da: string;
+    articles: Array<{
+      numero_da: string;
+      code_article: string;
+      designation_article: string;
+      quantite: number;
+      marque: string;
+      unite: string;
+      famille: string;
+    }>;
+    total: number;
+  }> {
+    return this.http.get<any>(`${this.apiUrl}/caneva/da/${numeroDA}/articles`);
+  }
+
+  /**
+   * Caneva BC - Tarif max pour un article depuis X3
+   */
+  getCanevaTarifMax(codeArticle: string): Observable<{ code_article: string; tarif_max: number | null }> {
+    return this.http.get<{ code_article: string; tarif_max: number | null }>(
+      `${this.apiUrl}/caneva/article/${codeArticle}/tarif-max`
+    );
+  }
+
+  /**
+   * Caneva BC - Marques disponibles pour un article depuis X3
+   */
+  getCanevaMarques(codeArticle: string): Observable<{ code_article: string; marques: string[]; total: number }> {
+    return this.http.get<{ code_article: string; marques: string[]; total: number }>(
+      `${this.apiUrl}/caneva/article/${codeArticle}/marques`
+    );
+  }
+
+  /**
    * Envoyer les données Caneva BC directement au RPA (sans enregistrement en base)
    */
   genererCanevaBC(request: GenerateCanevaBCRequest): Observable<EnvoyerBCRPAResponse> {

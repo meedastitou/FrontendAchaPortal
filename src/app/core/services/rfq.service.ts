@@ -2,7 +2,18 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { RFQ, RFQDetail, RFQListResponse, RFQFilters, StatutRFQ } from '../models';
+import {
+  RFQ,
+  RFQDetail,
+  RFQListResponse,
+  RFQFilters,
+  StatutRFQ,
+  FournisseurSearchResponse,
+  DAListResponseRFQ,
+  ArticlesDAListResponseRFQ,
+  CreerRFQManuelRequest,
+  CreerRFQManuelResponse
+} from '../models';
 
 @Injectable({
   providedIn: 'root'
@@ -132,5 +143,43 @@ export class RFQService {
     window.URL.revokeObjectURL(url);
   }
 
+  // ══════════════════════════════════════════════════════════════
+  // CRÉATION MANUELLE DE RFQ
+  // ══════════════════════════════════════════════════════════════
 
+  /**
+   * Rechercher des fournisseurs pour la création de RFQ
+   */
+  searchFournisseurs(q: string = '', limit: number = 20): Observable<FournisseurSearchResponse> {
+    let params = new HttpParams().set('limit', limit.toString());
+    if (q) {
+      params = params.set('q', q);
+    }
+    return this.http.get<FournisseurSearchResponse>(`${this.API_URL}/creation/fournisseurs`, { params });
+  }
+
+  /**
+   * Récupérer les DA disponibles depuis MySQL
+   */
+  getDADisponibles(search: string = ''): Observable<DAListResponseRFQ> {
+    let params = new HttpParams();
+    if (search) {
+      params = params.set('search', search);
+    }
+    return this.http.get<DAListResponseRFQ>(`${this.API_URL}/creation/da-disponibles`, { params });
+  }
+
+  /**
+   * Récupérer les articles d'une DA
+   */
+  getArticlesDA(numeroDA: string): Observable<ArticlesDAListResponseRFQ> {
+    return this.http.get<ArticlesDAListResponseRFQ>(`${this.API_URL}/creation/da/${numeroDA}/articles`);
+  }
+
+  /**
+   * Créer des RFQ manuellement
+   */
+  creerRFQManuel(request: CreerRFQManuelRequest): Observable<CreerRFQManuelResponse> {
+    return this.http.post<CreerRFQManuelResponse>(`${this.API_URL}/creation/creer`, request);
+  }
 }
