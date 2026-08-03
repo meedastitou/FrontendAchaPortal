@@ -71,10 +71,10 @@ export const routes: Routes = [
         path: 'bon-commande',
         loadComponent: () => import('./features/bon-commande/bon-commande-list.component').then(m => m.BonCommandeListComponent)
       },
-      {
-        path: 'bon-commande/caneva',
-        loadComponent: () => import('./features/bon-commande/caneva-bc.component').then(m => m.CanevaBCComponent)
-      },
+      // {
+      //   path: 'bon-commande/caneva',
+      //   loadComponent: () => import('./features/bon-commande/caneva-bc.component').then(m => m.CanevaBCComponent)
+      // },
       {
         path: 'bon-commande/preparer/:codeFournisseur',
         loadComponent: () => import('./features/bon-commande/bon-commande-preparer.component').then(m => m.BonCommandePreparerComponent)
