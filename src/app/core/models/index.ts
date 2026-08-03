@@ -9,3 +9,4 @@ export * from './selection.model';
 export * from './admin-cotation.model';
 export * from './sync-x3.model';
 export * from './auto-bc-analyse.model';
+export * from './DAs-non-soldes.model';

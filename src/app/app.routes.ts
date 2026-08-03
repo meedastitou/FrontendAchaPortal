@@ -23,6 +23,10 @@ export const routes: Routes = [
         path: 'fournisseurs/:code',
         loadComponent: () => import('./features/fournisseurs/fournisseur-detail.component').then(m => m.FournisseurDetailComponent)
       },
+            {
+        path: 'DAs-non-soldes',
+        loadComponent: () => import('./features/das-non-soldes/das-non-soldes').then(m => m.DasNonSoldes)
+      },
       {
         path: 'rfq',
         loadComponent: () => import('./features/rfq/rfq-list.component').then(m => m.RFQListComponent)

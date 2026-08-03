@@ -38,6 +38,13 @@ import { AuthService } from '../core/services/auth.service';
             }
           </a>
 
+          <a routerLink="/DAs-non-soldes" routerLinkActive="active" class="nav-item">
+            <span class="nav-icon">DA</span>
+            @if (!sidebarCollapsed) {
+              <span class="nav-text">DAs non soldes</span>
+            }
+          </a>
+
           <a routerLink="/rfq" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">R</span>
             @if (!sidebarCollapsed) {
