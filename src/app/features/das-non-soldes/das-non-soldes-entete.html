@@ -1,0 +1,28 @@
+<div class="page-header">
+  <h1>DAs non soldées</h1>
+</div> <br>
+<div class="filters-card">
+  <div class="filters">
+    <div class="filter-group">
+      <label>Date debut</label>
+      <input type="date" [(ngModel)]="dateDebut" (change)="onFilterChange()" />
+    </div>
+
+    <div class="filter-group">
+      <label>Famille</label>
+      <input type="text" placeholder="Famille..." [(ngModel)]="famille" (input)="onFilterChange()" />
+    </div>
+
+    <div class="filter-group">
+      <label>Article</label>
+      <input type="text" placeholder="Code article..." [(ngModel)]="article" (input)="onFilterChange()" />
+    </div>
+
+    <div class="filter-group">
+      <label>N DA</label>
+      <input type="text" placeholder="Numero DA..." [(ngModel)]="numeroDa" (input)="onFilterChange()" />
+    </div>
+
+    <button class="btn btn-secondary" (click)="reset()">Reinitialiser</button>
+  </div>
+</div>

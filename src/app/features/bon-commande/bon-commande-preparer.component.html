@@ -1,0 +1,198 @@
+<div class="preparer-container">
+  <!-- Header -->
+  <div class="page-header">
+    <button class="btn-back" (click)="goBack()">
+      <span>&larr;</span> Retour
+    </button>
+    <div class="header-info">
+      <h1>Préparer Bon de Commande</h1>
+      <div class="fournisseur-badge">
+        <span class="avatar">{{ nomFournisseur().charAt(0) }}</span>
+        <div class="details">
+          <span class="nom">{{ nomFournisseur() }}</span>
+          <span class="code">{{ codeFournisseur() }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Chargement des lignes disponibles...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-message">
+      <span class="error-icon">!</span>
+      <span>{{ error() }}</span>
+    </div>
+  } @else {
+    <div class="content-grid">
+      <!-- Lignes à sélectionner -->
+      <div class="lignes-section">
+        <div class="section-header">
+          <h2>Lignes disponibles</h2>
+          <div class="selection-actions">
+            <button class="btn-link" (click)="selectAll()">Tout sélectionner</button>
+            <span class="separator">|</span>
+            <button class="btn-link" (click)="deselectAll()">Tout désélectionner</button>
+          </div>
+        </div>
+
+        <div class="lignes-par-da">
+          @for (group of getLignesParDA(); track group.numero_da) {
+            <div class="da-group">
+              <div class="da-header">
+                <span class="da-badge">DA</span>
+                <span class="da-numero">{{ group.numero_da }}</span>
+                <span class="da-count">{{ group.lignes.length }} article(s)</span>
+              </div>
+
+              <table class="lignes-table">
+                <thead>
+                  <tr>
+                    <th class="col-select"></th>
+                    <th>Article</th>
+                    <th>Désignation</th>
+                    <th class="col-num">Qté dispo</th>
+                    <th class="col-num">Qté cmd</th>
+                    <th class="col-num">P.U. HT</th>
+                    <th class="col-num">Total HT</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (ligne of group.lignes; track ligne.ligne_id) {
+                    <tr [class.selected]="ligne.selected" [class.deselected]="!ligne.selected">
+                      <td class="col-select">
+                        <input
+                          type="checkbox"
+                          [checked]="ligne.selected"
+                          (change)="toggleSelection(ligne)"
+                          class="checkbox"
+                        />
+                      </td>
+                      <td class="code-article">{{ ligne.code_article }}</td>
+                      <td class="designation">{{ ligne.designation || '-' }}</td>
+                      <td class="col-num">{{ ligne.quantite_disponible }} {{ ligne.unite }}</td>
+                      <td class="col-num">
+                        <input
+                          type="number"
+                          [value]="ligne.quantite_a_commander"
+                          (input)="updateQuantite(ligne, $event)"
+                          [max]="ligne.quantite_disponible"
+                          min="0"
+                          step="1"
+                          class="input-quantite"
+                          [disabled]="!ligne.selected"
+                        />
+                      </td>
+                      <td class="col-num prix">{{ formatMontant(ligne.prix_unitaire_ht) }}</td>
+                      <td class="col-num total">
+                        {{ formatMontant(ligne.quantite_a_commander * ligne.prix_unitaire_ht) }}
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Récapitulatif -->
+      <div class="recap-section">
+        <div class="recap-card">
+          <h3>Récapitulatif du BC</h3>
+
+          <div class="recap-fournisseur">
+            <div class="recap-avatar">{{ nomFournisseur().charAt(0) }}</div>
+            <div class="recap-details">
+              <span class="nom">{{ nomFournisseur() }}</span>
+              @if (emailFournisseur()) {
+                <span class="email">{{ emailFournisseur() }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="recap-stats">
+            <div class="stat-row">
+              <span class="label">DA incluses</span>
+              <span class="value">{{ dasIncluses().length }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="label">Lignes sélectionnées</span>
+              <span class="value">{{ lignesSelectionnees().length }}</span>
+            </div>
+          </div>
+
+          <div class="recap-das">
+            @for (da of dasIncluses(); track da) {
+              <span class="da-chip">{{ da }}</span>
+            }
+          </div>
+
+          <div class="recap-totaux">
+            <div class="total-row">
+              <span>Total HT</span>
+              <span class="montant">{{ formatMontant(totalHT()) }} MAD</span>
+            </div>
+            <div class="total-row">
+              <span>TVA (20%)</span>
+              <span class="montant">{{ formatMontant(totalTVA()) }} MAD</span>
+            </div>
+            <div class="total-row grand-total">
+              <span>Total TTC</span>
+              <span class="montant">{{ formatMontant(totalTTC()) }} MAD</span>
+            </div>
+          </div>
+
+          <div class="recap-form">
+            <div class="form-group">
+              <label>Conditions de paiement</label>
+              <input
+                type="text"
+                [ngModel]="conditionsPaiement()"
+                (ngModelChange)="conditionsPaiement.set($event)"
+                placeholder="Ex: 30 jours fin de mois"
+              />
+            </div>
+            <div class="form-group">
+              <label>Lieu de livraison</label>
+              <input
+                type="text"
+                [ngModel]="lieuLivraison()"
+                (ngModelChange)="lieuLivraison.set($event)"
+                placeholder="Ex: Entrepôt principal"
+              />
+            </div>
+            <div class="form-group">
+              <label>Commentaire</label>
+              <textarea
+                rows="3"
+                [ngModel]="commentaire()"
+                (ngModelChange)="commentaire.set($event)"
+                placeholder="Notes supplémentaires..."
+              ></textarea>
+            </div>
+          </div>
+
+          <button
+            class="btn-generer"
+            (click)="genererBC()"
+            [disabled]="lignesSelectionnees().length === 0 || generating()">
+            @if (generating()) {
+              <span class="spinner-small"></span>
+              Génération en cours...
+            } @else {
+              Générer le Bon de Commande
+            }
+          </button>
+
+          @if (lignesSelectionnees().length === 0) {
+            <p class="warning-text">Sélectionnez au moins une ligne pour générer le BC</p>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

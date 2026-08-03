@@ -1,0 +1,49 @@
+<app-das-non-soldes-entete (filtersChange)="onFiltersChange($event)"></app-das-non-soldes-entete>
+
+<div class="table-card das-card">
+
+  @if (loadingDas()) {
+    <div class="loading">Chargement...</div>
+  } @else if (dasNonSoldees().length === 0) {
+    <div class="empty">Aucune DA non soldée trouvée</div>
+  } @else {
+    <table class="data-table">
+    <thead>
+        <tr>
+        <th>N DA</th>
+        <th>Article</th>
+        <th>Designation</th>
+        <th>Qte</th>
+        <th>Unite</th>
+        <th>Marque</th>
+        <th>Famille</th>
+        <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (da of dasNonSoldees(); track da.DA + da.Article) {
+        <tr>
+            <td>{{ da.DA }}</td>
+            <td class="code">{{ da.Article }}</td>
+            <td>{{ da['DésignationArticle'] || '-' }}</td>
+            <td class="qty">{{ da.QteDA }}</td>
+            <td>{{ da.Unite || '-' }}</td>
+            <td>{{ da.marque || '-' }}</td>
+            <td>{{ da.Famille || '-' }}</td>
+            <td>
+            @if (isTransferred(da)) {
+                <span class="badge-transferred">Transferee</span>
+            } @else if (isTransferring(da)) {
+                <span class="loading-small">...</span>
+            } @else {
+                <button class="btn-icon" (click)="transfererDA(da)" title="Transferer vers demandes_achat_portail">
+                Transferer
+                </button>
+            }
+            </td>
+        </tr>
+        }
+    </tbody>
+    </table>
+  }
+</div>

@@ -1,0 +1,398 @@
+<div class="page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Tableau Comparatif des Offres</h1>
+      <p>Comparez les reponses fournisseurs pour choisir la meilleure offre</p>
+    </div>
+    <div class="header-actions">
+      <button
+        class="btn btn-secondary"
+        (click)="selectionAutomatique()"
+        [disabled]="selectionLoading()"
+      >
+        @if (selectionLoading()) {
+          <span class="spinner-small"></span>
+        }
+        Selection Auto (Meilleur Prix)
+      </button>
+      @if (nbSelections() > 0) {
+        <button class="btn btn-primary" (click)="allerPreBC()">
+          Pre-BC ({{ nbSelections() }} articles)
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (selectionMessage()) {
+    <div class="selection-message">
+      {{ selectionMessage() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Chargement des donnees...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-container">
+      <p class="error">{{ error() }}</p>
+      <button class="btn btn-primary" (click)="loadDashboard()">Reessayer</button>
+    </div>
+  } @else if (dashboard()) {
+    <!-- Stats Overview -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value">{{ dashboard()!.total_articles }}</div>
+        <div class="stat-label">Articles avec offres</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ dashboard()!.total_offres }}</div>
+        <div class="stat-label">Offres recues</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-value">{{ (dashboard()!.total_offres / dashboard()!.total_articles) | number:'1.1-1' }}</div>
+        <div class="stat-label">Offres / Article (moy.)</div>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-bar">
+      <input
+        type="text"
+        placeholder="Rechercher par code article, designation ou numero DA..."
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+      />
+      <span class="search-count">{{ filteredArticles().length }} article(s)</span>
+    </div>
+
+    <!-- Articles List -->
+    <div class="articles-grid">
+      @for (article of filteredArticles(); track article.code_article) {
+        <div class="article-card" (click)="selectArticle(article)">
+          <div class="article-header">
+            <div class="article-info">
+              <span class="code">{{ article.code_article }}</span>
+              <span class="designation">{{ article.designation || 'Sans designation' }}</span>
+            </div>
+            <div class="offres-counts">
+              <div class="offres-count">
+                <span class="count">{{ article.analyse.nb_offres }}</span>
+                <span class="label">reponse(s)</span>
+              </div>
+              @if (article.fournisseurs_en_attente && article.fournisseurs_en_attente.length > 0) {
+                <div class="offres-count attente">
+                  <span class="count">{{ article.fournisseurs_en_attente.length }}</span>
+                  <span class="label">en attente</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="article-das">
+            @for (da of article.das; track da) {
+              <span class="da-badge">{{ da }}</span>
+            }
+          </div>
+
+          <div class="article-meta">
+            <div class="meta-item">
+              <span class="meta-label">Qte demandee:</span>
+              <span class="meta-value">{{ formatMontant(article.quantite_demandee) }}</span>
+            </div>
+            @if (article.marque_demandee) {
+              <div class="meta-item">
+                <span class="meta-label">Marque:</span>
+                <span class="meta-value brand">{{ article.marque_demandee }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="article-prix">
+            @if (article.tarif_reference) {
+              <div class="prix-item tarif-ref">
+                <span class="prix-label">Tarif Réf.</span>
+                <span class="prix-value">{{ formatMontant(article.tarif_reference) }} MAD</span>
+              </div>
+            }
+            <div class="prix-item best" [class.depasse-tarif]="article.tarif_reference && article.analyse.prix_min && article.analyse.prix_min > article.tarif_reference">
+              <span class="prix-label">Meilleur prix</span>
+              <span class="prix-value">{{ formatMontant(article.analyse.prix_min) }} MAD</span>
+            </div>
+            <div class="prix-item">
+              <span class="prix-label">Prix max</span>
+              <span class="prix-value">{{ formatMontant(article.analyse.prix_max) }} MAD</span>
+            </div>
+            @if (getEcartPrix(article) > 0) {
+              <div class="ecart">
+                <span class="ecart-label">Ecart</span>
+                <span class="ecart-value">{{ getEcartPrix(article) | number:'1.0-0' }}%</span>
+              </div>
+            }
+          </div>
+
+          <div class="article-footer">
+            @if (hasSelection(article)) {
+              <span class="selected-fournisseur">
+                Selectionne: <strong>{{ getSelectedFournisseur(article) }}</strong>
+              </span>
+            } @else {
+              <span class="best-fournisseur">
+                Recommande: <strong>{{ article.analyse.meilleur_fournisseur }}</strong>
+              </span>
+            }
+            <span class="voir-detail">Voir detail &rarr;</span>
+          </div>
+          @if (hasSelection(article)) {
+            <div class="selection-badge">Selectionne</div>
+          }
+        </div>
+      }
+    </div>
+
+    @if (filteredArticles().length === 0) {
+      <div class="empty-state">
+        <p>Aucun article trouve</p>
+      </div>
+    }
+  }
+
+  <!-- Modal Detail Article -->
+  @if (selectedArticle()) {
+    <div class="modal-overlay" (click)="closeDetail()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="modal-title">
+            <h2>{{ selectedArticle()!.code_article }}</h2>
+            <p>{{ selectedArticle()!.designation || 'Sans designation' }}</p>
+            <div class="modal-das">
+              @for (da of selectedArticle()!.das; track da) {
+                <div class="da-with-signature">
+                  <span class="da-badge">{{ da }}</span>
+                  @if (signaturesLoading()) {
+                    <span class="sig-badge sig-loading">...</span>
+                  } @else {
+                    <span class="sig-badge" [class]="getSignatureClass(da)" [title]="'Signature: ' + getSignatureStatus(da)">
+                      {{ getSignatureStatus(da) }}
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+          <button class="btn-close" (click)="closeDetail()">&times;</button>
+        </div>
+
+        <div class="article-details-row">
+          <div class="detail-item">
+            <span class="detail-label">Quantite demandee:</span>
+            <span class="detail-value">{{ formatMontant(selectedArticle()!.quantite_demandee) }}</span>
+          </div>
+          @if (selectedArticle()!.marque_demandee) {
+            <div class="detail-item">
+              <span class="detail-label">Marque demandee:</span>
+              <span class="detail-value brand">{{ selectedArticle()!.marque_demandee }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- Dernière réception X3 -->
+        <div class="derniere-reception-section">
+          <h4>Dernière réception (Sage X3)</h4>
+          @if (derniereReceptionLoading()) {
+            <div class="reception-loading">
+              <span class="spinner-small"></span>
+              Chargement...
+            </div>
+          } @else if (derniereReceptionError()) {
+            <div class="reception-empty">
+              {{ derniereReceptionError() }}
+            </div>
+          } @else if (derniereReception()) {
+            <div class="reception-card">
+              <div class="reception-item">
+                <span class="reception-label">Fournisseur:</span>
+                <span class="reception-value fournisseur">
+                  {{ derniereReception()!.nom_fournisseur || derniereReception()!.code_fournisseur }}
+                  @if (derniereReception()!.nom_fournisseur) {
+                    <span class="code-small">({{ derniereReception()!.code_fournisseur }})</span>
+                  }
+                </span>
+              </div>
+              <div class="reception-item">
+                <span class="reception-label">Prix:</span>
+                <span class="reception-value prix">{{ formatMontant(derniereReception()!.prix) }} {{ derniereReception()!.devise }}</span>
+              </div>
+              <div class="reception-item">
+                <span class="reception-label">Date:</span>
+                <span class="reception-value">{{ formatDate(derniereReception()!.date_reception) }}</span>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Analyse -->
+        <div class="analyse-section">
+          @if (selectedArticle()!.tarif_reference) {
+            <div class="tarif-reference-banner">
+              <span class="tarif-label">Tarif de référence (prix max achat):</span>
+              <span class="tarif-value">{{ formatMontant(selectedArticle()!.tarif_reference) }} MAD</span>
+            </div>
+          }
+          <div class="analyse-grid">
+            <div class="analyse-item">
+              <span class="value">{{ selectedArticle()!.analyse.nb_offres }}</span>
+              <span class="label">Offres</span>
+            </div>
+            <div class="analyse-item best" [class.depasse-tarif]="selectedArticle()!.tarif_reference && selectedArticle()!.analyse.prix_min && selectedArticle()!.analyse.prix_min! > selectedArticle()!.tarif_reference!">
+              <span class="value">{{ formatMontant(selectedArticle()!.analyse.prix_min) }}</span>
+              <span class="label">Prix min</span>
+            </div>
+            <div class="analyse-item">
+              <span class="value">{{ formatMontant(selectedArticle()!.analyse.prix_max) }}</span>
+              <span class="label">Prix max</span>
+            </div>
+            <div class="analyse-item">
+              <span class="value">{{ formatMontant(selectedArticle()!.analyse.prix_moyen) }}</span>
+              <span class="label">Prix moyen</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tableau comparatif -->
+        <div class="table-section">
+          <h3>Comparaison des offres</h3>
+          <p class="table-hint">Cliquez sur "Selectionner" pour choisir un fournisseur pour chaque DA</p>
+          <div class="table-container">
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th class="rank-col">#</th>
+                  <th>Fournisseur</th>
+                  <th>Prix Unit. HT</th>
+                  <th>Qte dispo / demandee</th>
+                  <th>Date livraison</th>
+                  <th>Marque proposee</th>
+                  <th>Paiement</th>
+                  <th class="action-col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (offre of selectedArticle()!.offres; track offre.detail_id; let i = $index) {
+                  <tr [class.best-row]="isBestPrice(offre, selectedArticle()!)">
+                    <td class="rank-col">
+                      <span class="rank" [class.gold]="i === 0" [class.silver]="i === 1" [class.bronze]="i === 2">
+                        {{ i + 1 }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="fournisseur-cell">
+                        <div class="fournisseur-name-row">
+                          <span class="nom">{{ offre.nom_fournisseur }}</span>
+                          @if (offre.is_acheteur) {
+                            <span class="badge acheteur-badge" title="Saisie manuelle par l'acheteur">Acheteur</span>
+                          }
+                        </div>
+                        <span class="code">{{ offre.code_fournisseur || '-' }}</span>
+                      </div>
+                    </td>
+                    <td class="prix-col">
+                      <span class="prix" [class.best-prix]="isBestPrice(offre, selectedArticle()!)">
+                        {{ formatMontant(offre.prix_unitaire_ht) }}
+                      </span>
+                      <span class="devise">{{ offre.devise }}</span>
+                    </td>
+                    <td class="qty-col">
+                      <span class="qty-dispo" [class.qty-ok]="offre.quantite_disponible && offre.quantite_disponible >= selectedArticle()!.quantite_demandee" [class.qty-low]="offre.quantite_disponible && offre.quantite_disponible < selectedArticle()!.quantite_demandee">
+                        {{ offre.quantite_disponible || '-' }}
+                      </span>
+                      <span class="qty-separator">/</span>
+                      <span class="qty-demandee">{{ formatMontant(selectedArticle()!.quantite_demandee) }}</span>
+                    </td>
+                    <td>{{ formatDate(offre.date_livraison) }}</td>
+                    <td>
+                      @if (offre.marque_conforme === true) {
+                        <span class="badge conforme">Conforme</span>
+                      } @else if (offre.marque_conforme === false) {
+                        <span class="badge non-conforme">{{ offre.marque_proposee || 'Non conforme' }}</span>
+                      } @else {
+                        <span>{{ offre.marque_proposee || '-' }}</span>
+                      }
+                    </td>
+                    <td class="paiement-col">
+                      @if (offre.methodes_paiement) {
+                        <span class="paiement-badge">{{ offre.methodes_paiement }}</span>
+                      } @else {
+                        <span class="paiement-empty">-</span>
+                      }
+                    </td>
+                    <td class="action-col">
+                      @for (da of selectedArticle()!.das; track da) {
+                        @if (isOffreSelectionnee(selectedArticle()!, offre, da)) {
+                          <span class="btn-selected" title="DA: {{ da }}">
+                            Selectionne ({{ da }})
+                          </span>
+                        } @else {
+                          <button
+                            class="btn btn-sm btn-outline"
+                            (click)="selectionnerOffre(selectedArticle()!, offre, da); $event.stopPropagation()"
+                            [disabled]="selectionLoading()"
+                            title="Selectionner pour DA {{ da }}"
+                          >
+                            @if (selectedArticle()!.das.length > 1) {
+                              Sel. ({{ da }})
+                            } @else {
+                              Selectionner
+                            }
+                          </button>
+                        }
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Fournisseurs en attente -->
+        @if (selectedArticle()!.fournisseurs_en_attente && selectedArticle()!.fournisseurs_en_attente.length > 0) {
+          <div class="attente-section">
+            <h3>Fournisseurs en attente de reponse ({{ selectedArticle()!.fournisseurs_en_attente.length }})</h3>
+            <div class="attente-list">
+              @for (fa of selectedArticle()!.fournisseurs_en_attente; track fa.code_fournisseur) {
+                <div class="attente-item">
+                  <div class="attente-fournisseur">
+                    <span class="attente-nom">{{ fa.nom_fournisseur }}</span>
+                    <span class="attente-code">{{ fa.code_fournisseur }}</span>
+                  </div>
+                  <div class="attente-date">
+                    <span class="attente-label">Envoyee le:</span>
+                    <span class="attente-value">{{ formatDate(fa.date_envoi) }}</span>
+                  </div>
+                  <div class="attente-status">
+                    <span class="status-badge pending">En attente</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Recommandation -->
+        <div class="recommandation-section">
+          <div class="recommandation-box">
+            <span class="rec-icon">&#9733;</span>
+            <div class="rec-content">
+              <span class="rec-label">Fournisseur recommande (meilleur prix)</span>
+              <span class="rec-value">{{ selectedArticle()!.analyse.meilleur_fournisseur }}</span>
+              <span class="rec-prix">{{ formatMontant(selectedArticle()!.analyse.meilleur_prix) }} MAD</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

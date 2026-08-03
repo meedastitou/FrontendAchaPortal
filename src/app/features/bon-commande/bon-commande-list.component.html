@@ -1,0 +1,333 @@
+<div class="bc-list-container">
+  <!-- Header -->
+  <div class="page-header">
+    <h1>Bons de Commande</h1>
+    <p class="subtitle">Créez et gérez vos bons de commande</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button
+      class="tab"
+      [class.active]="activeTab() === 'nouveau'"
+      (click)="setActiveTab('nouveau')">
+      Nouveau BC
+      @if (fournisseursDisponibles().length > 0) {
+        <span class="tab-badge">{{ fournisseursDisponibles().length }}</span>
+      }
+    </button>
+    <button
+      class="tab tab-caneva"
+      [class.active]="activeTab() === 'caneva'"
+      (click)="setActiveTab('caneva')">
+      Caneva BC
+      <span class="tab-icon">+</span>
+    </button>
+    <button
+      class="tab"
+      [class.active]="activeTab() === 'existant'"
+      (click)="setActiveTab('existant')">
+      BC Existants
+      @if (totalBC() > 0) {
+        <span class="tab-badge">{{ totalBC() }}</span>
+      }
+    </button>
+    <button
+      class="tab tab-x3"
+      [class.active]="activeTab() === 'x3'"
+      (click)="setActiveTab('x3')">
+      BC Sage X3
+      @if (totalBCX3() > 0) {
+        <span class="tab-badge">{{ totalBCX3() }}</span>
+      }
+    </button>
+  </div>
+
+  <!-- Contenu Nouveau BC -->
+  @if (activeTab() === 'nouveau') {
+    <div class="tab-content">
+      @if (loadingFournisseurs()) {
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Chargement des fournisseurs...</p>
+        </div>
+      } @else if (fournisseursDisponibles().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">BC</div>
+          <h3>Aucun fournisseur disponible</h3>
+          <p>Toutes les réponses fournisseurs ont déjà été commandées.</p>
+        </div>
+      } @else {
+        <div class="info-banner">
+          <span class="info-icon">i</span>
+          <span>Sélectionnez un fournisseur pour créer un bon de commande. Vous pourrez ensuite choisir les lignes à inclure.</span>
+        </div>
+
+        <div class="fournisseurs-grid">
+          @for (fournisseur of fournisseursDisponibles(); track fournisseur.code_fournisseur) {
+            <div class="fournisseur-card" (click)="preparerBC(fournisseur.code_fournisseur)">
+              <div class="card-header">
+                <div class="fournisseur-info">
+                  <div class="fournisseur-avatar">{{ fournisseur.nom_fournisseur.charAt(0) }}</div>
+                  <div class="fournisseur-details">
+                    <h3>{{ fournisseur.nom_fournisseur }}</h3>
+                    <span class="code">{{ fournisseur.code_fournisseur }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-stats">
+                <div class="stat">
+                  <span class="stat-value">{{ fournisseur.nb_da_disponibles }}</span>
+                  <span class="stat-label">DA</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-value">{{ fournisseur.nb_lignes_total }}</span>
+                  <span class="stat-label">Lignes</span>
+                </div>
+                <div class="stat highlight">
+                  <span class="stat-value">{{ formatMontant(fournisseur.montant_total_ht) }}</span>
+                  <span class="stat-label">MAD HT</span>
+                </div>
+              </div>
+
+              <div class="card-das">
+                <h4>Demandes d'achat :</h4>
+                <div class="das-list">
+                  @for (da of fournisseur.das_disponibles; track da.numero_da) {
+                    <div class="da-chip">
+                      <span class="da-numero">{{ da.numero_da }}</span>
+                      <span class="da-lignes">{{ da.nb_lignes }} art.</span>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="card-footer">
+                <button class="btn-preparer">
+                  Préparer le BC
+                  <span class="arrow">→</span>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Contenu BC Existants -->
+  @if (activeTab() === 'existant') {
+    <div class="tab-content">
+      @if (loadingBC()) {
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Chargement des bons de commande...</p>
+        </div>
+      } @else if (bonsCommande().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">BC</div>
+          <h3>Aucun bon de commande</h3>
+          <p>Vous n'avez pas encore créé de bon de commande.</p>
+        </div>
+      } @else {
+        <!-- Total -->
+        <div class="total-info">
+          <span class="total-label">Total:</span>
+          <span class="total-value">{{ totalBC() }} bon(s) de commande</span>
+        </div>
+
+        <div class="bc-table-container">
+          <table class="bc-table">
+            <thead>
+              <tr>
+                <th>N° BC</th>
+                <th>Fournisseur</th>
+                <th>Date</th>
+                <th>DA incluses</th>
+                <th>Lignes</th>
+                <th>Montant TTC</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (bc of bonsCommande(); track bc.numero_bc) {
+                <tr (click)="voirBC(bc.numero_bc)">
+                  <td class="bc-numero">{{ bc.numero_bc }}</td>
+                  <td>
+                    <div class="fournisseur-cell">
+                      <span class="nom">{{ bc.nom_fournisseur }}</span>
+                      <span class="code">{{ bc.code_fournisseur }}</span>
+                    </div>
+                  </td>
+                  <td>{{ formatDate(bc.date_creation) }}</td>
+                  <td>
+                    <div class="das-chips">
+                      @for (da of bc.das_incluses; track da) {
+                        <span class="da-mini-chip">{{ da }}</span>
+                      }
+                    </div>
+                  </td>
+                  <td class="center">{{ bc.nb_lignes }}</td>
+                  <td class="montant">{{ formatMontant(bc.montant_total_ttc) }} MAD</td>
+                  <td>
+                    <span class="badge" [class]="getStatutClass(bc.statut)">
+                      {{ getStatutLabel(bc.statut) }}
+                    </span>
+                  </td>
+                  <td>
+                    <button class="btn-voir" (click)="voirBC(bc.numero_bc); $event.stopPropagation()">
+                      Voir
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (totalBC() > limit) {
+          <div class="pagination">
+            <span class="pagination-info">
+              {{ (page - 1) * limit + 1 }} - {{ Math.min(page * limit, totalBC()) }} sur {{ totalBC() }}
+            </span>
+            <div class="pagination-buttons">
+              <button [disabled]="page === 1" (click)="goToPage(page - 1)">Precedent</button>
+              <button [disabled]="page * limit >= totalBC()" (click)="goToPage(page + 1)">Suivant</button>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  }
+
+  <!-- Contenu BC Sage X3 -->
+  @if (activeTab() === 'x3') {
+    <div class="tab-content">
+      <div class="info-banner info-x3">
+        <span class="info-icon">X3</span>
+        <span>Bons de commande crees dans Sage X3 via le robot RPA ce mois-ci.</span>
+        <button class="btn-refresh" (click)="loadBCX3()" [disabled]="loadingBCX3()">
+          @if (loadingBCX3()) {
+            Chargement...
+          } @else {
+            Actualiser
+          }
+        </button>
+      </div>
+
+      @if (loadingBCX3()) {
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Chargement des BC Sage X3...</p>
+        </div>
+      } @else if (bcX3List().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">X3</div>
+          <h3>Aucun BC Sage X3</h3>
+          <p>Aucun bon de commande cree via RPA ce mois-ci.</p>
+        </div>
+      } @else {
+        <!-- Stats -->
+        <div class="x3-stats">
+          <div class="x3-stat">
+            <span class="x3-stat-value">{{ totalBCX3() }}</span>
+            <span class="x3-stat-label">BC crees</span>
+          </div>
+          <div class="x3-stat">
+            <span class="x3-stat-value">{{ formatMontant(getTotalMontantX3()) }}</span>
+            <span class="x3-stat-label">Montant total HT</span>
+          </div>
+        </div>
+
+        <!-- Table des BC X3 -->
+        <div class="bc-table-container">
+          <table class="bc-table">
+            <thead>
+              <tr>
+                <th>N Commande</th>
+                <th>Fournisseur</th>
+                <th>Lignes</th>
+                <th>Total HT</th>
+                <th>Total TTC</th>
+                <th>Modifie par</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (bc of bcX3List(); track bc.numero_commande) {
+                <tr
+                  [class.selected]="selectedBCX3()?.numero_commande === bc.numero_commande"
+                  (click)="selectBCX3(bc)">
+                  <td class="bc-numero">{{ bc.numero_commande }}</td>
+                  <td>
+                    <div class="fournisseur-cell">
+                      <span class="nom">{{ bc.nom_fournisseur || '-' }}</span>
+                      <span class="code">{{ bc.code_fournisseur }}</span>
+                    </div>
+                  </td>
+                  <td class="center">{{ bc.nb_lignes }}</td>
+                  <td class="montant">{{ formatMontant(bc.total_commande_ht || 0) }} MAD</td>
+                  <td class="montant">{{ formatMontant(bc.total_lignes_ttc || 0) }} MAD</td>
+                  <td>
+                    <span class="badge badge-x3">{{ bc.utilisateur_modif || 'RPA' }}</span>
+                  </td>
+                  <td>
+                    <button
+                      class="btn-details"
+                      (click)="selectBCX3(bc); $event.stopPropagation()">
+                      @if (selectedBCX3()?.numero_commande === bc.numero_commande) {
+                        Masquer
+                      } @else {
+                        Details
+                      }
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Lignes du BC (expandable) -->
+                @if (selectedBCX3()?.numero_commande === bc.numero_commande) {
+                  <tr class="detail-row">
+                    <td colspan="7">
+                      <div class="bc-lignes">
+                        <h4>Lignes du BC {{ bc.numero_commande }}</h4>
+                        @if (bc.lignes.length === 0) {
+                          <p class="no-lignes">Aucune ligne trouvee</p>
+                        } @else {
+                          <table class="lignes-table">
+                            <thead>
+                              <tr>
+                                <th>DA</th>
+                                <th>Article</th>
+                                <th>Designation</th>
+                                <th>Montant HT</th>
+                                <th>Montant TTC</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              @for (ligne of bc.lignes; track ligne.code_article) {
+                                <tr>
+                                  <td class="code">{{ ligne.numero_da || '-' }}</td>
+                                  <td class="code">{{ ligne.code_article || '-' }}</td>
+                                  <td class="designation">{{ ligne.designation_article || '-' }}</td>
+                                  <td class="montant">{{ formatMontant(ligne.montant_ligne_ht || 0) }}</td>
+                                  <td class="montant">{{ formatMontant(ligne.montant_ligne_ttc || 0) }}</td>
+                                </tr>
+                              }
+                            </tbody>
+                          </table>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+</div>
