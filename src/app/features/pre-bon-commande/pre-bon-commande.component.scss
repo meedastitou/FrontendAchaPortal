@@ -393,10 +393,12 @@
 
 .modal-summary {
   display: flex;
+  align-items: flex-end;
   gap: 24px;
   padding: 16px 24px;
   background: #f9fafb;
   flex-shrink: 0;
+  flex-wrap: wrap;
 
   .summary-item {
     .label {
@@ -410,6 +412,39 @@
       font-size: 18px;
       font-weight: 700;
       color: #059669;
+    }
+  }
+
+  .modal-affaire {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #374151;
+      white-space: nowrap;
+    }
+
+    .form-control {
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      width: 180px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+
+      &:focus {
+        outline: none;
+        border-color: #059669;
+        box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+      }
+
+      &::placeholder {
+        color: #9ca3af;
+      }
     }
   }
 }

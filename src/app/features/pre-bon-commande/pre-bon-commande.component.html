@@ -133,6 +133,18 @@
             <span class="label">Montant selectionne HT</span>
             <span class="value">{{ formatMontant(calculateSelectedTotal(selectedFournisseur()!)) }} {{ selectedFournisseur()!.devise }}</span>
           </div>
+          <!-- Input pour l'affaire -->
+          <div class="modal-affaire">
+            <label for="affaire">Affaire:</label>
+            <input
+              type="text"
+              id="affaire"
+              class="form-control"
+              [ngModel]="affaireInput()"
+              (ngModelChange)="affaireInput.set($event)"
+              placeholder="Entrez l'affaire"
+            />
+          </div>
         </div>
 
         <!-- Bouton tout selectionner/deselectionner -->

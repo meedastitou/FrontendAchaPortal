@@ -120,6 +120,7 @@ export interface PreBCDashboardResponse {
 export interface GenererBCFromPreBCRequest {
   code_fournisseur: string;
   selection_ids: number[];
+  affaire?: string;
   conditions_paiement?: string;
   lieu_livraison?: string;
   commentaire?: string;

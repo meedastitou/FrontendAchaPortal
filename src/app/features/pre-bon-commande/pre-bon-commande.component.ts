@@ -1,4 +1,5 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SelectionService } from '../../core/services/selection.service';
@@ -12,7 +13,7 @@ import {
 @Component({
   selector: 'app-pre-bon-commande',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './pre-bon-commande.component.html',
   styleUrl: './pre-bon-commande.component.scss'
 })
@@ -25,6 +26,9 @@ export class PreBonCommandeComponent implements OnInit {
 
   // Fournisseur selectionne pour voir le detail
   selectedFournisseur = signal<FournisseurPreBC | null>(null);
+
+  // Valeur de l'affaire (signal separe pour le binding ngModel)
+  affaireInput = signal<string>('');
 
   // Articles selectionnes pour la generation BC (par fournisseur)
   selectedArticles = signal<Map<string, Set<number>>>(new Map());
@@ -66,6 +70,7 @@ export class PreBonCommandeComponent implements OnInit {
   // Ouvrir le detail d'un fournisseur
   openFournisseurDetail(fournisseur: FournisseurPreBC): void {
     this.selectedFournisseur.set(fournisseur);
+    this.affaireInput.set('');
   }
 
   // Fermer le detail
@@ -135,7 +140,8 @@ export class PreBonCommandeComponent implements OnInit {
 
     const request: GenererBCFromPreBCRequest = {
       code_fournisseur: fournisseur.code_fournisseur,
-      selection_ids: Array.from(selectedIds)
+      selection_ids: Array.from(selectedIds),
+      affaire: this.affaireInput() || ""
     };
     console.log('Generating BC with request:', request);
     this.selectionService.genererBC(request).subscribe({
