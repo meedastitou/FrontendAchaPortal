@@ -2,7 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { DasNonSoldesEnteteComponent } from './das-non-soldes-entete'; // ou sans .component selon ton nommage
 import { FormsModule } from '@angular/forms';
 import { DANonSoldee, DasFilters  } from '../../core/models';
-import { DasNonSoldesServices } from '../../core/services';
+import { DasNonSoldesServices } from '../../core/services/das-non-soldes';
 
 
 @Component({
