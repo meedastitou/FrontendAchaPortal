@@ -62,6 +62,17 @@
         <input type="date" [(ngModel)]="filters.date_fin" (change)="loadRFQs()" />
       </div>
 
+      <div class="filter-group filter-checkbox">
+        <label class="checkbox-label">
+          <input
+            type="checkbox"
+            [(ngModel)]="filters.da_non_solde"
+            (change)="loadRFQs()"
+          />
+          <span>DA non soldees (X3)</span>
+        </label>
+      </div>
+
       <button class="btn btn-secondary" (click)="resetFilters()">
         Reinitialiser
       </button>

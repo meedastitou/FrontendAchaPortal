@@ -36,6 +36,11 @@ export class RFQService {
     if (filters.code_article) params = params.set('code_article', filters.code_article);
     if (filters.numero_da) params = params.set('numero_da', filters.numero_da);
 
+    // Si le filtre DA non soldées est activé, utiliser l'endpoint dédié
+    if (filters.da_non_solde) {
+      return this.http.get<RFQListResponse>(`${this.API_URL}/da-non-solde/rfqs`, { params });
+    }
+
     return this.http.get<RFQListResponse>(this.API_URL, { params });
   }
 

@@ -24,7 +24,8 @@ export class RFQListComponent implements OnInit {
     date_debut: undefined,
     date_fin: undefined,
     code_article: '',
-    numero_da: ''
+    numero_da: '',
+    da_non_solde: false
   };
 
   page = 1;
@@ -80,7 +81,8 @@ export class RFQListComponent implements OnInit {
       date_debut: undefined,
       date_fin: undefined,
       code_article: '',
-      numero_da: ''
+      numero_da: '',
+      da_non_solde: false
     };
     this.page = 1;
     this.loadRFQs();

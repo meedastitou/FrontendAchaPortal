@@ -54,6 +54,7 @@ export interface RFQFilters {
   search?: string;
   code_article?: string;
   numero_da?: string;
+  da_non_solde?: boolean;
 }
 
 // ──────────────────────────────────────────────────────────
