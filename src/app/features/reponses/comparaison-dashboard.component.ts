@@ -101,26 +101,26 @@ export class ComparaisonDashboardComponent implements OnInit {
   }
 
   // Selection automatique de tous les articles (meilleur prix)
-  selectionAutomatique(): void {
-    this.selectionLoading.set(true);
-    this.selectionMessage.set(null);
+  // selectionAutomatique(): void {
+  //   this.selectionLoading.set(true);
+  //   this.selectionMessage.set(null);
 
-    this.selectionService.selectionAuto().subscribe({
-      next: (response) => {
-        this.selectionMessage.set(response.message);
-        this.loadSelections();
-        this.selectionLoading.set(false);
+  //   this.selectionService.selectionAuto().subscribe({
+  //     next: (response) => {
+  //       this.selectionMessage.set(response.message);
+  //       this.loadSelections();
+  //       this.selectionLoading.set(false);
 
-        // Effacer le message apres 3 secondes
-        setTimeout(() => this.selectionMessage.set(null), 3000);
-      },
-      error: (err) => {
-        console.error('Error auto-selecting:', err);
-        this.selectionMessage.set('Erreur lors de la selection automatique');
-        this.selectionLoading.set(false);
-      }
-    });
-  }
+  //       // Effacer le message apres 3 secondes
+  //       setTimeout(() => this.selectionMessage.set(null), 3000);
+  //     },
+  //     error: (err) => {
+  //       console.error('Error auto-selecting:', err);
+  //       this.selectionMessage.set('Erreur lors de la selection automatique');
+  //       this.selectionLoading.set(false);
+  //     }
+  //   });
+  // }
 
   // Selection manuelle d'une offre pour un article
   selectionnerOffre(article: ArticleDashboard, offre: OffreDashboard, numeroDA: string): void {

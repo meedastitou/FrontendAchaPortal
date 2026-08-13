@@ -6,7 +6,7 @@
       <p>Comparez les reponses fournisseurs pour choisir la meilleure offre</p>
     </div>
     <div class="header-actions">
-      <button
+      <!-- <button
         class="btn btn-secondary"
         (click)="selectionAutomatique()"
         [disabled]="selectionLoading()"
@@ -15,7 +15,7 @@
           <span class="spinner-small"></span>
         }
         Selection Auto (Meilleur Prix)
-      </button>
+      </button> -->
       @if (nbSelections() > 0) {
         <button class="btn btn-primary" (click)="allerPreBC()">
           Pre-BC ({{ nbSelections() }} articles)
