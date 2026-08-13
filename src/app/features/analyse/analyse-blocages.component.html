@@ -1,0 +1,653 @@
+<div class="page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Analyse des Blocages BC</h1>
+      <p>Comprendre pourquoi les bons de commande ne sont pas crees</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline" (click)="loadDashboard()">
+        Actualiser
+      </button>
+      <button class="btn btn-primary" (click)="exportToExcel()">
+        Exporter Excel
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Chargement de l'analyse...</p>
+    </div>
+  } @else if (error()) {
+    <div class="error-container">
+      <p class="error">{{ error() }}</p>
+      <button class="btn btn-primary" (click)="loadDashboard()">Reessayer</button>
+    </div>
+  } @else if (dashboard()) {
+    <!-- Funnel Section -->
+    <div class="section">
+      <h2 class="section-title">Pipeline des DA</h2>
+      <div class="funnel-container">
+        <div class="funnel-step">
+          <div class="funnel-bar" [style.width]="getFunnelWidth(dashboard()!.funnel.total_da, dashboard()!.funnel.total_da)">
+            <span class="funnel-value">{{ dashboard()!.funnel.total_da }}</span>
+          </div>
+          <span class="funnel-label">DA non soldees</span>
+        </div>
+        <div class="funnel-step">
+          <div class="funnel-bar step-2" [style.width]="getFunnelWidth(dashboard()!.funnel.da_avec_rfq, dashboard()!.funnel.total_da)">
+            <span class="funnel-value">{{ dashboard()!.funnel.da_avec_rfq }}</span>
+          </div>
+          <span class="funnel-label">Avec RFQ envoyee</span>
+          <span class="funnel-rate">{{ formatPourcent(dashboard()!.funnel.taux_rfq) }}</span>
+        </div>
+        <div class="funnel-step">
+          <div class="funnel-bar step-3" [style.width]="getFunnelWidth(dashboard()!.funnel.da_avec_reponses, dashboard()!.funnel.total_da)">
+            <span class="funnel-value">{{ dashboard()!.funnel.da_avec_reponses }}</span>
+          </div>
+          <span class="funnel-label">Avec reponses</span>
+          <span class="funnel-rate">{{ formatPourcent(dashboard()!.funnel.taux_reponses) }}</span>
+        </div>
+        <div class="funnel-step">
+          <div class="funnel-bar step-4" [style.width]="getFunnelWidth(dashboard()!.funnel.da_avec_selections, dashboard()!.funnel.total_da)">
+            <span class="funnel-value">{{ dashboard()!.funnel.da_avec_selections }}</span>
+          </div>
+          <span class="funnel-label">Avec selections</span>
+          <span class="funnel-rate">{{ formatPourcent(dashboard()!.funnel.taux_selections) }}</span>
+        </div>
+        <div class="funnel-step">
+          <div class="funnel-bar step-5" [style.width]="getFunnelWidth(dashboard()!.funnel.da_avec_bc, dashboard()!.funnel.total_da)">
+            <span class="funnel-value">{{ dashboard()!.funnel.da_avec_bc }}</span>
+          </div>
+          <span class="funnel-label">BC generes</span>
+          <span class="funnel-rate">{{ formatPourcent(dashboard()!.funnel.taux_bc) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blocages Cards -->
+    <div class="section">
+      <h2 class="section-title">Causes de blocage</h2>
+      <div class="blocage-cards">
+        <div
+          class="blocage-card"
+          [class.active]="selectedTab() === 'non-signes'"
+          (click)="selectTab('non-signes')"
+        >
+          <div class="blocage-icon non-signe">
+            <span>&#9998;</span>
+          </div>
+          <div class="blocage-info">
+            <span class="blocage-count">{{ dashboard()!.blocages.nb_non_signees }}</span>
+            <span class="blocage-label">DA non signees</span>
+          </div>
+        </div>
+
+        <div
+          class="blocage-card"
+          [class.active]="selectedTab() === 'prix-superieur'"
+          (click)="selectTab('prix-superieur')"
+        >
+          <div class="blocage-icon prix">
+            <span>&#8593;</span>
+          </div>
+          <div class="blocage-info">
+            <span class="blocage-count">{{ dashboard()!.blocages.nb_prix_superieur_tarif }}</span>
+            <span class="blocage-label">Prix > Tarif</span>
+            <span class="blocage-sub">{{ formatMontant(dashboard()!.blocages.montant_ecart_prix_total) }} MAD ecart</span>
+          </div>
+        </div>
+
+        <div
+          class="blocage-card"
+          [class.active]="selectedTab() === 'marque-differente'"
+          (click)="selectTab('marque-differente')"
+        >
+          <div class="blocage-icon marque">
+            <span>&#8800;</span>
+          </div>
+          <div class="blocage-info">
+            <span class="blocage-count">{{ dashboard()!.blocages.nb_marque_differente }}</span>
+            <span class="blocage-label">Marque differente</span>
+          </div>
+        </div>
+
+        <div
+          class="blocage-card"
+          [class.active]="selectedTab() === 'marque-inexistante'"
+          (click)="selectTab('marque-inexistante')"
+        >
+          <div class="blocage-icon marque-inex">
+            <span>&#10008;</span>
+          </div>
+          <div class="blocage-info">
+            <span class="blocage-count">{{ dashboard()!.blocages.nb_marque_inexistante }}</span>
+            <span class="blocage-label">Marque inexistante</span>
+            <span class="blocage-sub">Non dans X3</span>
+          </div>
+        </div>
+
+        <div
+          class="blocage-card"
+          [class.active]="selectedTab() === 'sans-reponse'"
+          (click)="selectTab('sans-reponse')"
+        >
+          <div class="blocage-icon sans-reponse">
+            <span>&#8709;</span>
+          </div>
+          <div class="blocage-info">
+            <span class="blocage-count">{{ dashboard()!.blocages.nb_sans_reponse }}</span>
+            <span class="blocage-label">Sans reponse</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section RFQ DA Non Soldées -->
+    <div class="section">
+      <h2 class="section-title">RFQ pour DA Non Soldees (X3)</h2>
+      <div class="blocage-cards rfq-cards-3">
+        <div
+          class="blocage-card rfq-card"
+          [class.active]="selectedTab() === 'da-sans-rfq'"
+          (click)="selectTab('da-sans-rfq')"
+        >
+          <div class="blocage-icon rfq-danger">
+            <span>&#10008;</span>
+          </div>
+          <div class="blocage-info">
+            <span class="blocage-count">{{ totalDaSansRfq() }}</span>
+            <span class="blocage-label">DA sans RFQ</span>
+            <span class="blocage-sub">Aucune consultation</span>
+          </div>
+        </div>
+
+        <div
+          class="blocage-card rfq-card"
+          [class.active]="selectedTab() === 'rfq-sans-reponse'"
+          (click)="selectTab('rfq-sans-reponse')"
+        >
+          <div class="blocage-icon rfq-warning">
+            <span>!</span>
+          </div>
+          <div class="blocage-info">
+            <span class="blocage-count">{{ totalRfqSansReponse() }}</span>
+            <span class="blocage-label">RFQ sans reponse</span>
+            <span class="blocage-sub">En attente fournisseur</span>
+          </div>
+        </div>
+
+        <div
+          class="blocage-card rfq-card"
+          [class.active]="selectedTab() === 'rfq-avec-reponse'"
+          (click)="selectTab('rfq-avec-reponse')"
+        >
+          <div class="blocage-icon rfq-success">
+            <span>&#10004;</span>
+          </div>
+          <div class="blocage-info">
+            <span class="blocage-count">{{ totalRfqAvecReponse() }}</span>
+            <span class="blocage-label">RFQ avec reponse</span>
+            <span class="blocage-sub">Reponses recues</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Liste détaillée -->
+    <div class="section">
+      <div class="list-header">
+        <h2 class="section-title">
+          @switch (selectedTab()) {
+            @case ('non-signes') { Articles sur DA non signees }
+            @case ('prix-superieur') { Articles avec prix superieur au tarif }
+            @case ('marque-differente') { Articles avec marque differente }
+            @case ('marque-inexistante') { Articles avec marque inexistante dans X3 }
+            @case ('sans-reponse') { Articles sans reponse fournisseur }
+            @case ('da-sans-rfq') { DA/Articles sans RFQ (aucune consultation) }
+            @case ('rfq-sans-reponse') { RFQ en attente de reponse (DA Non Soldees) }
+            @case ('rfq-avec-reponse') { RFQ avec reponse (DA Non Soldees) }
+          }
+        </h2>
+
+        <!-- Filtres -->
+        <div class="filters">
+          <input
+            type="text"
+            placeholder="Numero DA"
+            [(ngModel)]="filterNumeroDA"
+            (keyup.enter)="applyFilters()"
+          />
+          <input
+            type="text"
+            placeholder="Code article"
+            [(ngModel)]="filterCodeArticle"
+            (keyup.enter)="applyFilters()"
+          />
+          <button class="btn btn-sm btn-primary" (click)="applyFilters()">Filtrer</button>
+          <button class="btn btn-sm btn-outline" (click)="clearFilters()">Effacer</button>
+        </div>
+      </div>
+
+      @if (listLoading()) {
+        <div class="list-loading">
+          <div class="spinner-small"></div>
+          Chargement...
+        </div>
+      } @else {
+        <!-- Liste Non Signés -->
+        @if (selectedTab() === 'non-signes') {
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>DA</th>
+                <th>Article</th>
+                <th>Designation</th>
+                <th>Qte</th>
+                <th>Signature</th>
+                <th>Reponses</th>
+                <th>Meilleur prix</th>
+                <th>Fournisseur</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of articlesNonSignes(); track item.numero_da + item.code_article) {
+                <tr>
+                  <td class="mono">{{ item.numero_da }}</td>
+                  <td class="mono">{{ item.code_article }}</td>
+                  <td>{{ item.designation_article || '-' }}</td>
+                  <td>{{ item.quantite }} {{ item.unite || '' }}</td>
+                  <td>
+                    <span class="badge badge-warning">{{ item.libelle_signature }}</span>
+                  </td>
+                  <td>{{ item.nb_reponses }}</td>
+                  <td class="montant">{{ formatMontant(item.meilleur_prix) }}</td>
+                  <td>{{ item.meilleur_fournisseur || '-' }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" class="empty">Aucun article trouve</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+
+        <!-- Liste Prix > Tarif -->
+        @if (selectedTab() === 'prix-superieur') {
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>DA</th>
+                <th>Article</th>
+                <th>Designation</th>
+                <th>Tarif X3</th>
+                <th>Prix min</th>
+                <th>Ecart</th>
+                <th>Fournisseur</th>
+                <th>Offres</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of articlesPrixSup(); track item.numero_da + item.code_article) {
+                <tr>
+                  <td class="mono">{{ item.numero_da }}</td>
+                  <td class="mono">{{ item.code_article }}</td>
+                  <td>{{ item.designation_article || '-' }}</td>
+                  <td class="montant">{{ formatMontant(item.tarif_reference) }}</td>
+                  <td class="montant">{{ formatMontant(item.prix_min_propose) }}</td>
+                  <td>
+                    <span class="badge" [class]="getEcartClass(item.ecart_min_pourcent)">
+                      +{{ formatPourcent(item.ecart_min_pourcent) }}
+                    </span>
+                  </td>
+                  <td>{{ item.nom_fournisseur || item.fournisseur_moins_cher }}</td>
+                  <td>{{ item.nb_offres }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" class="empty">Aucun article trouve</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+
+        <!-- Liste Marque Différente -->
+        @if (selectedTab() === 'marque-differente') {
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>DA</th>
+                <th>Article</th>
+                <th>Marque demandee</th>
+                <th>Marque proposee</th>
+                <th>Dans X3?</th>
+                <th>Fournisseur</th>
+                <th>Prix</th>
+                <th>Conformes</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of articlesMarqueDiff(); track item.numero_da + item.code_article + item.code_fournisseur) {
+                <tr>
+                  <td class="mono">{{ item.numero_da }}</td>
+                  <td class="mono">{{ item.code_article }}</td>
+                  <td>{{ item.marque_souhaitee }}</td>
+                  <td>{{ item.marque_proposee }}</td>
+                  <td>
+                    @if (item.marque_existe_x3) {
+                      <span class="badge badge-success">Oui</span>
+                    } @else {
+                      <span class="badge badge-danger">Non</span>
+                    }
+                  </td>
+                  <td>{{ item.nom_fournisseur || item.code_fournisseur }}</td>
+                  <td class="montant">{{ formatMontant(item.prix_propose) }}</td>
+                  <td>{{ item.nb_offres_conformes }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" class="empty">Aucun article trouve</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+
+        <!-- Liste Marque Inexistante -->
+        @if (selectedTab() === 'marque-inexistante') {
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>DA</th>
+                <th>Article</th>
+                <th>Designation</th>
+                <th>Marque proposee</th>
+                <th>Marques valides X3</th>
+                <th>Fournisseur</th>
+                <th>Prix</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of articlesMarqueInex(); track item.numero_da + item.code_article + item.code_fournisseur) {
+                <tr>
+                  <td class="mono">{{ item.numero_da }}</td>
+                  <td class="mono">{{ item.code_article }}</td>
+                  <td>{{ item.designation_article || '-' }}</td>
+                  <td>
+                    <span class="badge badge-danger">{{ item.marque_proposee }}</span>
+                  </td>
+                  <td>{{ item.marques_valides_x3.join(', ') || 'Aucune' }}</td>
+                  <td>{{ item.nom_fournisseur || item.code_fournisseur }}</td>
+                  <td class="montant">{{ formatMontant(item.prix_propose) }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="7" class="empty">Aucun article trouve</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+
+        <!-- Liste Sans Réponse -->
+        @if (selectedTab() === 'sans-reponse') {
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>DA</th>
+                <th>Article</th>
+                <th>Designation</th>
+                <th>Qte</th>
+                <th>RFQ envoyees</th>
+                <th>Fournisseurs</th>
+                <th>Depuis</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of articlesSansReponse(); track item.numero_da + item.code_article) {
+                <tr>
+                  <td class="mono">{{ item.numero_da }}</td>
+                  <td class="mono">{{ item.code_article }}</td>
+                  <td>{{ item.designation_article || '-' }}</td>
+                  <td>{{ item.quantite }} {{ item.unite || '' }}</td>
+                  <td>{{ item.nb_rfq_envoyees }}</td>
+                  <td>{{ item.fournisseurs_consultes.join(', ') || '-' }}</td>
+                  <td>
+                    @if (item.jours_depuis_rfq > 7) {
+                      <span class="badge badge-danger">{{ item.jours_depuis_rfq }} jours</span>
+                    } @else {
+                      <span class="badge badge-warning">{{ item.jours_depuis_rfq }} jours</span>
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="7" class="empty">Aucun article trouve</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+
+        <!-- Liste DA Sans RFQ -->
+        @if (selectedTab() === 'da-sans-rfq') {
+          @if (rfqLoading()) {
+            <div class="list-loading">
+              <div class="spinner-small"></div>
+              Chargement...
+            </div>
+          } @else {
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>N DA</th>
+                  <th>Code Article</th>
+                  <th>Designation</th>
+                  <th>Qte</th>
+                  <th>Unite</th>
+                  <th>Marque</th>
+                  <th>Famille</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (da of daSansRfq(); track da.DA + da.Article) {
+                  <tr>
+                    <td class="mono">{{ da.DA }}</td>
+                    <td class="mono">{{ da.Article }}</td>
+                    <td>{{ da['DésignationArticle'] || '-' }}</td>
+                    <td>{{ da.QteDA }}</td>
+                    <td>{{ da.Unite || '-' }}</td>
+                    <td>{{ da.marque || '-' }}</td>
+                    <td>{{ da.Famille || '-' }}</td>
+                    <td>
+                      <a routerLink="/rfq/creation" class="btn btn-sm btn-primary">Creer RFQ</a>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="8" class="empty">Toutes les DA ont une RFQ associee</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        }
+
+        <!-- Liste RFQ Sans Réponse (DA Non Soldées) -->
+        @if (selectedTab() === 'rfq-sans-reponse') {
+          @if (rfqLoading()) {
+            <div class="list-loading">
+              <div class="spinner-small"></div>
+              Chargement des RFQ...
+            </div>
+          } @else {
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>N RFQ</th>
+                  <th>Fournisseur</th>
+                  <th>Date envoi</th>
+                  <th>Statut</th>
+                  <th>Relances</th>
+                  <th>Jours attente</th>
+                  <th>Articles</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (rfq of rfqsSansReponse(); track rfq.id) {
+                  <tr [class.urgent]="rfq.jours_depuis_envoi > 7">
+                    <td>
+                      <a [routerLink]="['/rfq', rfq.id]" class="link">{{ rfq.numero_rfq }}</a>
+                    </td>
+                    <td>
+                      <div class="fournisseur-cell">
+                        <span class="fournisseur-name">{{ rfq.nom_fournisseur }}</span>
+                        <span class="fournisseur-code">{{ rfq.code_fournisseur }}</span>
+                      </div>
+                    </td>
+                    <td>{{ formatDate(rfq.date_envoi) }}</td>
+                    <td>
+                      <span class="badge" [class]="'badge-' + rfq.statut">
+                        {{ formatStatut(rfq.statut) }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="relances" [class.warning]="rfq.nb_relances > 0">
+                        {{ rfq.nb_relances }}/3
+                      </span>
+                    </td>
+                    <td>
+                      @if (rfq.jours_depuis_envoi > 7) {
+                        <span class="badge badge-danger">{{ rfq.jours_depuis_envoi }} jours</span>
+                      } @else {
+                        <span class="badge badge-warning">{{ rfq.jours_depuis_envoi }} jours</span>
+                      }
+                    </td>
+                    <td>
+                      <div class="articles-preview">
+                        @for (ligne of rfq.lignes.slice(0, 2); track ligne.code_article) {
+                          <span class="article-tag">{{ ligne.code_article }}</span>
+                        }
+                        @if (rfq.lignes.length > 2) {
+                          <span class="more">+{{ rfq.lignes.length - 2 }}</span>
+                        }
+                      </div>
+                    </td>
+                    <td>
+                      <a [routerLink]="['/rfq', rfq.id]" class="btn btn-sm">Voir</a>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="8" class="empty">Aucune RFQ sans reponse pour les DA non soldees</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        }
+
+        <!-- Liste RFQ Avec Réponse (DA Non Soldées) -->
+        @if (selectedTab() === 'rfq-avec-reponse') {
+          @if (rfqLoading()) {
+            <div class="list-loading">
+              <div class="spinner-small"></div>
+              Chargement des RFQ...
+            </div>
+          } @else {
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>N RFQ</th>
+                  <th>Fournisseur</th>
+                  <th>Date envoi</th>
+                  <th>Date reponse</th>
+                  <th>Delai</th>
+                  <th>Articles</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (rfq of rfqsAvecReponse(); track rfq.id) {
+                  <tr>
+                    <td>
+                      <a [routerLink]="['/rfq', rfq.id]" class="link">{{ rfq.numero_rfq }}</a>
+                    </td>
+                    <td>
+                      <div class="fournisseur-cell">
+                        <span class="fournisseur-name">{{ rfq.nom_fournisseur }}</span>
+                        <span class="fournisseur-code">{{ rfq.code_fournisseur }}</span>
+                      </div>
+                    </td>
+                    <td>{{ formatDate(rfq.date_envoi) }}</td>
+                    <td>
+                      <span class="date-reponse">{{ formatDate(rfq.date_reponse) }}</span>
+                    </td>
+                    <td>
+                      <span class="delai" [class.fast]="rfq.delai_reponse_heures < 48">
+                        {{ formatDelai(rfq.delai_reponse_heures) }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="articles-preview">
+                        @for (ligne of rfq.lignes.slice(0, 2); track ligne.code_article) {
+                          <span class="article-tag">{{ ligne.code_article }}</span>
+                        }
+                        @if (rfq.lignes.length > 2) {
+                          <span class="more">+{{ rfq.lignes.length - 2 }}</span>
+                        }
+                      </div>
+                    </td>
+                    <td>
+                      <a [routerLink]="['/rfq', rfq.id]" class="btn btn-sm">Voir</a>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="7" class="empty">Aucune RFQ avec reponse pour les DA non soldees</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        }
+
+        <!-- Pagination -->
+        @if (totalItems() > pageSize) {
+          <div class="pagination">
+            <button
+              class="btn btn-sm"
+              [disabled]="currentPage() === 1"
+              (click)="goToPage(currentPage() - 1)"
+            >
+              Precedent
+            </button>
+            <span class="page-info">
+              Page {{ currentPage() }} / {{ totalPages() }} ({{ totalItems() }} elements)
+            </span>
+            <button
+              class="btn btn-sm"
+              [disabled]="currentPage() === totalPages()"
+              (click)="goToPage(currentPage() + 1)"
+            >
+              Suivant
+            </button>
+          </div>
+        }
+      }
+    </div>
+
+    <!-- Sync info -->
+    @if (dashboard()?.derniere_sync_x3) {
+      <div class="sync-info">
+        Derniere synchronisation X3: {{ formatDate(dashboard()!.derniere_sync_x3) }}
+      </div>
+    }
+  }
+</div>

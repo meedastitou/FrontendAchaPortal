@@ -104,6 +104,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/admin/auto-bc-analyse.component').then(m => m.AutoBCAnalyseComponent)
       },
       {
+        path: 'analyse',
+        loadComponent: () => import('./features/analyse/analyse-blocages.component').then(m => m.AnalyseBlocagesComponent)
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'
