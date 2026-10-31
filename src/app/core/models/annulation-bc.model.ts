@@ -2,7 +2,7 @@
 // Annulation BC - Modeles
 // ════════════════════════════════════════════════════════════
 
-export type StatutAnnulation = 'en_attente' | 'validee' | 'refusee';
+export type StatutAnnulation = 'en_attente' | 'en_cours' | 'validee' | 'refusee';
 
 export interface AnnulationBC {
   id: number;

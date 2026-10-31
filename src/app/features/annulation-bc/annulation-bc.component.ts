@@ -365,6 +365,11 @@ import {
       color: #92400e;
     }
 
+    .badge-en_cours {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
     .badge-validee {
       background: #d1fae5;
       color: #065f46;
@@ -492,6 +497,7 @@ export class AnnulationBCComponent implements OnInit {
   getStatutLabel(statut: StatutAnnulation): string {
     const labels: Record<StatutAnnulation, string> = {
       'en_attente': 'En attente',
+      'en_cours': 'En cours',
       'validee': 'Validee',
       'refusee': 'Refusee'
     };
