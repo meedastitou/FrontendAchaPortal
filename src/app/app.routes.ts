@@ -75,6 +75,10 @@ export const routes: Routes = [
         path: 'bon-commande',
         loadComponent: () => import('./features/bon-commande/bon-commande-list.component').then(m => m.BonCommandeListComponent)
       },
+      {
+        path: 'annulation-bc',
+        loadComponent: () => import('./features/annulation-bc/annulation-bc.component').then(m => m.AnnulationBCComponent)
+      },
       // {
       //   path: 'bon-commande/caneva',
       //   loadComponent: () => import('./features/bon-commande/caneva-bc.component').then(m => m.CanevaBCComponent)

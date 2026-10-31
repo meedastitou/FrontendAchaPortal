@@ -11,3 +11,4 @@ export * from './sync-x3.model';
 export * from './auto-bc-analyse.model';
 export * from './DAs-non-soldes.model';
 export * from './analyse.model';
+export * from './annulation-bc.model';

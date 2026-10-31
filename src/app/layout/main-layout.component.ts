@@ -87,6 +87,20 @@ import { AuthService } from '../core/services/auth.service';
             }
           </a>
 
+          <a routerLink="/annulation-bc" routerLinkActive="active" class="nav-item annulation-item">
+            <span class="nav-icon">X</span>
+            @if (!sidebarCollapsed) {
+              <span class="nav-text">Annulation BC</span>
+            }
+          </a>
+
+          <a routerLink="/analyse" routerLinkActive="active" class="nav-item analyse-item">
+            <span class="nav-icon">A</span>
+            @if (!sidebarCollapsed) {
+              <span class="nav-text">Analyse Blocages</span>
+            }
+          </a>
+
           @if (authService.currentUser()?.role === 'admin') {
             <div class="nav-divider"></div>
             <a routerLink="/admin/users" routerLinkActive="active" class="nav-item admin-item">
@@ -288,6 +302,34 @@ import { AuthService } from '../core/services/auth.service';
       height: 1px;
       background: rgba(255, 255, 255, 0.1);
       margin: 12px 16px;
+    }
+
+    .nav-item.annulation-item {
+      color: rgba(239, 68, 68, 0.8);
+    }
+
+    .nav-item.annulation-item:hover {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+    }
+
+    .nav-item.annulation-item.active {
+      background: rgba(239, 68, 68, 0.25);
+      color: #f87171;
+    }
+
+    .nav-item.analyse-item {
+      color: rgba(139, 92, 246, 0.9);
+    }
+
+    .nav-item.analyse-item:hover {
+      background: rgba(139, 92, 246, 0.15);
+      color: #a78bfa;
+    }
+
+    .nav-item.analyse-item.active {
+      background: rgba(139, 92, 246, 0.25);
+      color: #a78bfa;
     }
 
     .nav-item.admin-item {
