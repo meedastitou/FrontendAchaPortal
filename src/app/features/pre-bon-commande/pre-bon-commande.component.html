@@ -114,7 +114,7 @@
   <!-- Modal Detail Fournisseur -->
   @if (selectedFournisseur()) {
     <div class="modal-overlay" (click)="closeDetail()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-content" (click)="$event.stopPropagation(); affaireOpen.set(false)">
         <div class="modal-header">
           <div class="modal-title">
             <h2>{{ selectedFournisseur()!.nom_fournisseur }}</h2>
@@ -133,20 +133,108 @@
             <span class="label">Montant selectionne HT</span>
             <span class="value">{{ formatMontant(calculateSelectedTotal(selectedFournisseur()!)) }} {{ selectedFournisseur()!.devise }}</span>
           </div>
-          <!-- Input pour l'affaire -->
-          <div class="modal-affaire">
-            <label for="affaire">Affaire:</label>
-            <input
-              type="text"
-              id="affaire"
-              class="form-control"
-              [ngModel]="affaireInput()"
-              (ngModelChange)="affaireInput.set($event)"
-              placeholder="Entrez l'affaire"
-            />
-          </div>
         </div>
 
+        <!-- Affaire : notification (calcul en arriere-plan) -->
+        <!-- Affaire : notification (calcul en arriere-plan) -->
+        @if (suggestionLoading()) {
+          <div class="notif notif-info">Recherche de l'affaire dans l'historique…</div>
+        } @else if (suggestion(); as s) {
+          <div class="notif"
+               [class.notif-success]="s.trouvee"
+               [class.notif-error]="!s.trouvee">
+            @if (affaireInput()) {
+              <div><strong>Affaire utilisée : {{ affaireInput() }}</strong></div>
+            }
+            @if (s.trouvee && affaireInput() !== s.affaire) {
+              <div>Modifiée manuellement (suggestion : {{ s.affaire }}).</div>
+            } 
+
+            @if (s.trouvee && s.alternatives.length > 1 && !changerAffaire()) {
+              <div class="chips">
+                @for (alt of s.alternatives.slice(0, 5); track alt.affaire) {
+                  <button type="button" class="chip"
+                          [class.active]="affaireInput() === alt.affaire"
+                          (click)="affaireInput.set(alt.affaire)">
+                    {{ alt.affaire }}
+                  </button>
+                }
+              </div>
+            }
+
+            @if (s.trouvee && !changerAffaire()) {
+              <button type="button" class="btn-link" (click)="ouvrirChangement()">
+                Changer l'affaire
+              </button>
+            }
+          </div>
+
+          <!-- Liste X3 : 1re commande (rien trouve) OU changement demande -->
+          @if (!s.trouvee || changerAffaire()) {
+            <div class="select-affaire">
+              <label>
+                {{ s.trouvee ? "Choisir une autre affaire" : "Première commande : sélectionner l'affaire" }}
+              </label>
+
+              <div class="affaire-dropdown" (click)="$event.stopPropagation()">
+                <button type="button" class="affaire-trigger"
+                        [class.open]="affaireOpen()"
+                        (click)="toggleAffaireMenu()">
+                  <span class="trigger-text" [class.placeholder]="!affaireInput()">{{ libelleAffaire() }}</span>
+                  <span class="chevron"></span>
+                </button>
+
+                  @if (affaireOpen()) {
+                    <div class="affaire-menu">
+                      <div class="affaire-search">
+                        <input
+                          #rechercheInput
+                          type="text"
+                          placeholder="Rechercher par code tier, n° affaire ou raison…"
+                          [ngModel]="rechercheAffaire()"
+                          (ngModelChange)="rechercheAffaire.set($event)"
+                          (keydown.enter)="choisirPremier()"
+                          (keydown.escape)="affaireOpen.set(false)"
+                        />
+                      </div>
+
+                      <ul class="affaire-list">
+                        @if (!rechercheAffaire().trim()) {
+                          <li class="affaire-option" [class.selected]="!affaireInput()" (click)="choisirAffaire('')">
+                            <span class="num">— Sans affaire —</span>
+                          </li>
+                        }
+
+                        @for (a of affairesFiltrees().slice(0, 100); track a.numero_affaire) {
+                          <li class="affaire-option"
+                              [class.selected]="affaireInput() === a.numero_affaire"
+                              (click)="choisirAffaire(a.numero_affaire)">
+                            <span class="num">{{ a.numero_affaire }}</span>
+                            <span class="raison">{{ a.raison || 'Sans raison' }}</span>
+                            <span class="tier">{{ a.code_tier }}</span>
+                          </li>
+                        } @empty {
+                          <li class="affaire-empty">Aucune affaire trouvée pour « {{ rechercheAffaire() }} »</li>
+                        }
+
+                        @if (affairesFiltrees().length > 100) {
+                          <li class="affaire-empty">
+                            {{ affairesFiltrees().length }} résultats : affinez la recherche pour voir les autres
+                          </li>
+                        }
+                      </ul>
+                    </div>
+                  }
+              </div>
+
+              @if (s.trouvee) {
+                <button type="button" class="btn-link" (click)="annulerChangement()">
+                  Revenir à l'affaire suggérée
+                </button>
+              }
+            </div>
+          }
+        }
         <!-- Bouton tout selectionner/deselectionner -->
         <div class="modal-actions-top">
           <button class="btn btn-sm btn-outline" (click)="toggleAllArticles(selectedFournisseur()!)">
@@ -222,7 +310,7 @@
           <button class="btn btn-secondary" (click)="closeDetail()">Fermer</button>
           <button
             class="btn btn-primary"
-            (click)="genererBC(selectedFournisseur()!); closeDetail()"
+            (click)="genererBC(selectedFournisseur()!)"
             [disabled]="countSelectedArticles(selectedFournisseur()!.code_fournisseur) === 0"
           >
             Generer BC ({{ countSelectedArticles(selectedFournisseur()!.code_fournisseur) }} articles)
