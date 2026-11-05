@@ -18,6 +18,20 @@ export interface SelectionFilters {
   numero_da?: string;
 }
 
+export interface AffaireX3 {
+  numero_affaire: string;
+  code_tier: string;
+  raison: string | null;
+}
+export interface SuggestionAffaire {
+  trouvee: boolean;
+  affaire: string | null;
+  niveau: 'article' | 'fournisseur' | 'aucune';
+  nb_affaires: number;
+  alternatives: { affaire: string; derniere_date?: string; articles_communs: number }[];
+  message: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -79,5 +93,12 @@ export class SelectionService {
    */
   genererBC(request: GenererBCFromPreBCRequest): Observable<GenererBCFromPreBCResponse> {
     return this.http.post<GenererBCFromPreBCResponse>(`${this.API_URL}/generer-bc`, request);
+  }
+
+  suggererAffaire(req: { code_fournisseur: string; selection_ids: number[] }): Observable<SuggestionAffaire> {
+    return this.http.post<SuggestionAffaire>(`${this.API_URL}/suggerer-affaire`, req);
+  }
+  listeAffaires(): Observable<AffaireX3[]> {
+    return this.http.get<AffaireX3[]>(`${this.API_URL}/liste-affaires`);
   }
 }

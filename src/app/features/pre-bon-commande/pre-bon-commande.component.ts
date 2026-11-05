@@ -1,8 +1,8 @@
-import { Component, OnInit, signal, computed, NgModule } from '@angular/core';
+import { Component, OnInit, signal, computed, NgModule, ViewChild, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { SelectionService } from '../../core/services/selection.service';
+import { SelectionService, SuggestionAffaire, AffaireX3  } from '../../core/services/selection.service';
 import {
   PreBCDashboardResponse,
   FournisseurPreBC,
@@ -24,15 +24,23 @@ export class PreBonCommandeComponent implements OnInit {
 
   dashboard = signal<PreBCDashboardResponse | null>(null);
 
+  suggestion = signal<SuggestionAffaire | null>(null);
+  suggestionLoading = signal(false);
+  affaireValidee = signal(false);
+  private suggestionSeq = 0;
+
   // Fournisseur selectionne pour voir le detail
   selectedFournisseur = signal<FournisseurPreBC | null>(null);
 
   // Valeur de l'affaire (signal separe pour le binding ngModel)
   affaireInput = signal<string>('');
-
+  // Liste des affaires X3 pour le fournisseur selectionne
+  affairesX3 = signal<AffaireX3[]>([]);
   // Articles selectionnes pour la generation BC (par fournisseur)
   selectedArticles = signal<Map<string, Set<number>>>(new Map());
-
+  affaireOpen = signal(false);
+  rechercheAffaire = signal('');
+  changerAffaire = signal(false);
   constructor(
     private selectionService: SelectionService,
     private router: Router
@@ -66,16 +74,140 @@ export class PreBonCommandeComponent implements OnInit {
       }
     });
   }
-
-  // Ouvrir le detail d'un fournisseur
-  openFournisseurDetail(fournisseur: FournisseurPreBC): void {
-    this.selectedFournisseur.set(fournisseur);
-    this.affaireInput.set('');
+  // ── Ids des selections cochees pour un fournisseur ──
+  private getSelectedIds(codeFournisseur: string): number[] {
+    const f = this.selectedFournisseur();
+    if (!f || f.code_fournisseur !== codeFournisseur) return [];
+    return f.articles
+      .filter(a => this.isArticleSelected(codeFournisseur, a.id))
+      .map(a => a.id);
   }
 
+  // Ouvrir le detail d'un fournisseur
+  openFournisseurDetail(fournisseur: FournisseurPreBC) {
+    this.selectedFournisseur.set(fournisseur);
+    this.affaireInput.set('');
+    this.affaireValidee.set(false);                 // AJOUT
+    this.suggestion.set(null);                      // AJOUT
+    this.chargerSuggestion(fournisseur); 
+  }
+  private chargerListeAffaires(): void {
+    if (this.affairesX3().length > 0) return;
+    this.selectionService.listeAffaires().subscribe({
+      next: (liste) => this.affairesX3.set(liste),
+      error: () => this.affairesX3.set([])
+    });
+  }
+
+
+    // Liste filtrée par code tier, numéro d'affaire ou raison
+  affairesFiltrees = computed(() => {
+    const q = this.rechercheAffaire().trim().toLowerCase();
+    const liste = this.affairesX3();
+    if (!q) return liste;
+    return liste.filter(a =>
+      a.code_tier.toLowerCase().includes(q) ||
+      a.numero_affaire.toLowerCase().includes(q) ||
+      (a.raison ?? '').toLowerCase().includes(q)
+    );
+  });
+
+  // Met le curseur dans la barre de recherche dès que la liste s'ouvre
+  @ViewChild('rechercheInput') set rechercheInput(el: ElementRef<HTMLInputElement> | undefined) {
+    el?.nativeElement.focus();
+  }
+
+  toggleAffaireMenu(): void {
+    this.rechercheAffaire.set('');
+    this.affaireOpen.set(!this.affaireOpen());
+  }
+
+  choisirPremier(): void {
+    const premier = this.affairesFiltrees()[0];
+    if (premier) this.choisirAffaire(premier.numero_affaire);
+  }
+
+
+  ouvrirChangement(): void {
+    this.changerAffaire.set(true);
+    this.chargerListeAffaires();
+  }
+
+  annulerChangement(): void {
+    this.changerAffaire.set(false);
+    this.affaireOpen.set(false);
+    const s = this.suggestion();
+    this.affaireInput.set(s?.trouvee && s.affaire ? s.affaire : '');  // revient à la suggestion
+  }
+
+  choisirAffaire(numero: string): void {
+    this.affaireInput.set(numero);
+    this.rechercheAffaire.set('');
+    this.affaireOpen.set(false);
+  }
+
+  libelleAffaire(): string {
+    const n = this.affaireInput();
+    if (!n) return '— Sans affaire —';
+    const a = this.affairesX3().find(x => x.numero_affaire === n);
+    return a ? `${a.numero_affaire} — ${a.raison || 'Sans raison'}` : n;
+  }
+
+
+  private chargerSuggestion(f: FournisseurPreBC): void {
+    const ids = this.getSelectedIds(f.code_fournisseur);
+    if (ids.length === 0) {
+      this.suggestion.set(null);
+      this.suggestionLoading.set(false);
+      return;
+    }
+
+    const seq = ++this.suggestionSeq;
+    this.suggestionLoading.set(true);
+
+    this.selectionService
+      .suggererAffaire({ code_fournisseur: f.code_fournisseur, selection_ids: ids })
+      .subscribe({
+        next: (s: SuggestionAffaire) => {
+          if (seq !== this.suggestionSeq) return;
+          this.suggestion.set(s);
+          this.affaireInput.set(s.trouvee && s.affaire ? s.affaire : '');
+          if (!s.trouvee) this.chargerListeAffaires();
+          this.suggestionLoading.set(false);
+        },
+        error: () => {
+          if (seq !== this.suggestionSeq) return;
+          this.suggestion.set({
+            trouvee: false, affaire: null, niveau: 'aucune', nb_affaires: 0, alternatives: [],
+            message: "Suggestion indisponible, veuillez saisir l'affaire."
+          });
+          this.affaireInput.set('');
+          this.chargerListeAffaires(); 
+          this.suggestionLoading.set(false);
+        }
+      });
+  }
+
+  private rafraichirSuggestion(): void {
+    const f = this.selectedFournisseur();
+    if (f) this.chargerSuggestion(f);
+  }
+
+  onAffaireChange(valeur: string): void {
+    this.affaireInput.set(valeur);
+    this.affaireValidee.set(false);
+  }
+
+  confirmerAffaire(): void {
+    if (!this.affaireInput().trim()) return;
+    this.affaireValidee.set(true);
+  }
   // Fermer le detail
   closeDetail(): void {
     this.selectedFournisseur.set(null);
+    this.affaireValidee.set(false);                 // AJOUT
+    this.suggestion.set(null);                      // AJOUT
+    this.suggestionSeq++; 
   }
 
   // Toggle selection d'un article
@@ -91,6 +223,7 @@ export class PreBonCommandeComponent implements OnInit {
 
     map.set(codeFournisseur, articleIds);
     this.selectedArticles.set(map);
+    this.rafraichirSuggestion();
   }
 
   // Verifier si un article est selectionne
@@ -127,6 +260,7 @@ export class PreBonCommandeComponent implements OnInit {
     }
 
     this.selectedArticles.set(map);
+    this.rafraichirSuggestion();
   }
 
   // Generer le BC pour un fournisseur
@@ -185,6 +319,7 @@ export class PreBonCommandeComponent implements OnInit {
         alert('Erreur lors de la deselection');
       }
     });
+    this.rafraichirSuggestion();
   }
 
   // Retour a la comparaison

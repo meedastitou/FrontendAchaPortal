@@ -113,6 +113,157 @@
   }
 }
 
+
+// ── Notification affaire ──
+.notif {
+  margin: 14px 36px 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  border: 1px solid transparent;
+}
+.notif-info    { background: #eef4fb; color: #1f4e8c; border-color: #d3e3f5; }
+.notif-success { background: #edf7f1; color: #2f7a52; border-color: #cfe8da; }
+
+
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.chip {
+  border: 1px solid #3f8f66; background: #fff; color: #2f7a52;
+  border-radius: 14px; padding: 2px 12px; font-size: 12px; cursor: pointer;
+  &:hover { background: #edf7f1; }
+  &.active { background: #3f8f66; color: #fff; }
+}
+
+// ── Liste de sélection de l'affaire ──
+.select-affaire {
+  margin: 12px 36px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 420px;
+
+  label { font-size: 12px; color: #6b7280; }
+}
+
+.affaire-dropdown { position: relative; }
+
+.affaire-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #fff;
+  border: 1px solid #d9dde3;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #1f2937;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color .15s, box-shadow .15s;
+
+  &:hover { border-color: #b9c0ca; }
+  &.open, &:focus-visible {
+    border-color: #3f8f66;
+    box-shadow: 0 0 0 3px rgba(63, 143, 102, .15);
+    outline: none;
+  }
+
+  .trigger-text {
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    &.placeholder { color: #8a93a0; }
+  }
+
+  .chevron {
+    width: 8px; height: 8px; flex-shrink: 0;
+    border-right: 2px solid #8a93a0; border-bottom: 2px solid #8a93a0;
+    transform: rotate(45deg) translateY(-2px);
+    transition: transform .15s;
+  }
+  &.open .chevron { transform: rotate(-135deg) translateY(-2px); }
+}
+
+.affaire-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  z-index: 20;
+  background: #fff;
+  border: 1px solid #e2e5ea;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, .12);
+  overflow: hidden;
+}
+
+.affaire-search {
+  padding: 8px;
+  border-bottom: 1px solid #eef0f3;
+
+  input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 7px 10px;
+    font-size: 13px;
+    border: 1px solid #d9dde3;
+    border-radius: 6px;
+    outline: none;
+    &:focus { border-color: #3f8f66; box-shadow: 0 0 0 3px rgba(63, 143, 102, .15); }
+  }
+}
+
+.affaire-list {
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.affaire-empty {
+  padding: 10px;
+  font-size: 12px;
+  color: #8a93a0;
+  text-align: center;
+}
+
+.affaire-option {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+
+  .num    { font-weight: 600; color: #1f2937; }
+  .raison { color: #6b7280; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tier   { color: #9aa1ac; font-size: 11px; }
+
+  &:hover { background: #f3f6f9; }
+  &.selected { background: #edf7f1; .num { color: #2f7a52; } }
+}
+.btn-link {
+  align-self: flex-start;
+  margin-top: 6px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+  opacity: .85;
+  &:hover { opacity: 1; }
+}
+
+// Dans la notification, le lien est sous le texte
+.notif .btn-link { display: block; }
+
+
+
 /* Empty State */
 .empty-state {
   background: white;
