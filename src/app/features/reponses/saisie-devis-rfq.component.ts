@@ -174,7 +174,7 @@ interface LigneDevisForm extends LigneCotationPourSaisie {
             @if (loadingDetail()) {
               <div class="loading">Chargement des articles...</div>
             } @else {
-              <table class="articles-table">
+              <div class="table-scroll"><table class="articles-table">
                 <thead>
                   <tr>
                     <th>Article</th>
@@ -248,7 +248,7 @@ interface LigneDevisForm extends LigneCotationPourSaisie {
                     </tr>
                   }
                 </tbody>
-              </table>
+              </table></div>
             }
           </div>
 
@@ -295,7 +295,7 @@ interface LigneDevisForm extends LigneCotationPourSaisie {
 
             <div class="summary-section">
               <h4>Articles ({{ getLignesAvecPrix().length }} / {{ lignesDevis().length }})</h4>
-              <table class="summary-table">
+              <div class="table-scroll"><table class="summary-table">
                 <thead>
                   <tr>
                     <th>Article</th>
@@ -316,7 +316,7 @@ interface LigneDevisForm extends LigneCotationPourSaisie {
                     </tr>
                   }
                 </tbody>
-              </table>
+              </table></div>
             </div>
 
             @if (submitError()) {

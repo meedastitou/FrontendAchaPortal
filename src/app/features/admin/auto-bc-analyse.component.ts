@@ -187,7 +187,7 @@ type TabType = 'reponses' | 'statuts' | 'prix' | 'marques' | 'final';
               @if (reponsesFiltrees().length === 0) {
                 <div class="empty">Aucune reponse</div>
               } @else {
-                <table class="data-table">
+                <div class="table-scroll"><table class="data-table">
                   <thead>
                     <tr>
                       <th>DA</th>
@@ -220,7 +220,7 @@ type TabType = 'reponses' | 'statuts' | 'prix' | 'marques' | 'final';
                       </tr>
                     }
                   </tbody>
-                </table>
+                </table></div>
               }
             </div>
           }
@@ -233,7 +233,7 @@ type TabType = 'reponses' | 'statuts' | 'prix' | 'marques' | 'final';
               @if (analyse()!.statuts_da.length === 0) {
                 <div class="empty">Aucun statut DA</div>
               } @else {
-                <table class="data-table">
+                <div class="table-scroll"><table class="data-table">
                   <thead>
                     <tr>
                       <th>DA</th>
@@ -273,7 +273,7 @@ type TabType = 'reponses' | 'statuts' | 'prix' | 'marques' | 'final';
                       </tr>
                     }
                   </tbody>
-                </table>
+                </table></div>
               }
             </div>
           }
@@ -292,7 +292,7 @@ type TabType = 'reponses' | 'statuts' | 'prix' | 'marques' | 'final';
               @if (analyse()!.offres_prix_superieur.length === 0) {
                 <div class="empty">Aucune offre avec prix superieur au tarif</div>
               } @else {
-                <table class="data-table">
+                <div class="table-scroll"><table class="data-table">
                   <thead>
                     <tr>
                       <th>DA</th>
@@ -320,7 +320,7 @@ type TabType = 'reponses' | 'statuts' | 'prix' | 'marques' | 'final';
                       </tr>
                     }
                   </tbody>
-                </table>
+                </table></div>
               }
             </div>
           }
@@ -337,7 +337,7 @@ type TabType = 'reponses' | 'statuts' | 'prix' | 'marques' | 'final';
               @if (analyse()!.offres_marque_probleme.length === 0) {
                 <div class="empty">Aucun probleme de marque - toutes les marques sont validees</div>
               } @else {
-                <table class="data-table">
+                <div class="table-scroll"><table class="data-table">
                   <thead>
                     <tr>
                       <th>DA</th>
@@ -394,7 +394,7 @@ type TabType = 'reponses' | 'statuts' | 'prix' | 'marques' | 'final';
                       </tr>
                     }
                   </tbody>
-                </table>
+                </table></div>
               }
             </div>
           }
@@ -410,7 +410,7 @@ type TabType = 'reponses' | 'statuts' | 'prix' | 'marques' | 'final';
               @if (getReponsesValidees().length === 0) {
                 <div class="empty">Aucune reponse validee</div>
               } @else {
-                <table class="data-table">
+                <div class="table-scroll"><table class="data-table">
                   <thead>
                     <tr>
                       <th>DA</th>
@@ -465,7 +465,7 @@ type TabType = 'reponses' | 'statuts' | 'prix' | 'marques' | 'final';
                       </tr>
                     }
                   </tbody>
-                </table>
+                </table></div>
               }
             </div>
 
@@ -477,7 +477,7 @@ type TabType = 'reponses' | 'statuts' | 'prix' | 'marques' | 'final';
                   Ces marques etaient vides ou non valides dans les reponses fournisseurs et ont ete recuperees depuis X3 (priorite: DA > BC > BR > XMARQA).
                 </p>
 
-                <table class="data-table">
+                <div class="table-scroll"><table class="data-table">
                   <thead>
                     <tr>
                       <th>DA</th>
@@ -526,7 +526,7 @@ type TabType = 'reponses' | 'statuts' | 'prix' | 'marques' | 'final';
                       </tr>
                     }
                   </tbody>
-                </table>
+                </table></div>
               </div>
             }
 
@@ -564,7 +564,7 @@ type TabType = 'reponses' | 'statuts' | 'prix' | 'marques' | 'final';
                       }
                     </div>
 
-                    <table class="bc-lignes-table">
+                    <div class="table-scroll"><table class="bc-lignes-table">
                       <thead>
                         <tr>
                           <th>Article</th>
@@ -595,7 +595,7 @@ type TabType = 'reponses' | 'statuts' | 'prix' | 'marques' | 'final';
                           </tr>
                         }
                       </tbody>
-                    </table>
+                    </table></div>
                   </div>
                 }
               </div>

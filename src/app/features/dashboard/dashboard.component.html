@@ -295,7 +295,7 @@
     <div class="card-body">
       @if (recentReponses().length > 0) {
         <div class="reponses-table">
-          <table>
+          <div class="table-scroll"><table>
             <thead>
               <tr>
                 <th>N RFQ</th>
@@ -335,7 +335,7 @@
                 </tr>
               }
             </tbody>
-          </table>
+          </table></div>
         </div>
       } @else {
         <div class="empty">Aucune reponse recue</div>
@@ -378,7 +378,7 @@
 
           <h4>Articles ({{ selectedReponse()!.articles.length }})</h4>
           <div class="articles-table">
-            <table>
+            <div class="table-scroll"><table>
               <thead>
                 <tr>
                   <th>Code Article</th>
@@ -411,7 +411,7 @@
                   </tr>
                 }
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
         <div class="modal-footer">

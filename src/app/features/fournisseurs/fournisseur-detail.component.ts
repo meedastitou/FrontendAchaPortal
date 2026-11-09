@@ -115,7 +115,7 @@ import { Fournisseur } from '../../core/models';
             </div>
             <div class="card-body">
               @if (rfqHistory().length > 0) {
-                <table class="data-table">
+                <div class="table-scroll"><table class="data-table">
                   <thead>
                     <tr>
                       <th>Numero RFQ</th>
@@ -144,7 +144,7 @@ import { Fournisseur } from '../../core/models';
                       </tr>
                     }
                   </tbody>
-                </table>
+                </table></div>
               } @else {
                 <div class="empty">Aucune RFQ pour ce fournisseur</div>
               }

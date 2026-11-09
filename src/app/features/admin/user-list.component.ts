@@ -24,7 +24,7 @@ import { User, UserRole, Famille, UserCreate } from '../../core/models';
         } @else if (users().length === 0) {
           <div class="empty">Aucun utilisateur trouve</div>
         } @else {
-          <table class="data-table">
+          <div class="table-scroll"><table class="data-table">
             <thead>
               <tr>
                 <th>Utilisateur</th>
@@ -99,7 +99,7 @@ import { User, UserRole, Famille, UserCreate } from '../../core/models';
                 </tr>
               }
             </tbody>
-          </table>
+          </table></div>
         }
       </div>
 

@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, HostListener, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs';
 import { AuthService } from '../core/services/auth.service';
 
 @Component({
@@ -9,94 +10,99 @@ import { AuthService } from '../core/services/auth.service';
   imports: [CommonModule, RouterModule],
   template: `
     <div class="layout">
+      <!-- Fond sombre derrière le menu (mobile) -->
+      @if (isMobile() && drawerOpen()) {
+        <div class="backdrop" (click)="closeDrawer()"></div>
+      }
+
       <!-- Sidebar -->
-      <aside class="sidebar" [class.collapsed]="sidebarCollapsed">
+      <aside class="sidebar" [class.collapsed]="compact()" [class.mobile-open]="drawerOpen()">
         <div class="sidebar-header">
           <div class="logo">
             <span class="logo-icon">FA</span>
-            @if (!sidebarCollapsed) {
+            @if (!compact()) {
               <span class="logo-text">Flux Achat</span>
             }
           </div>
-          <button class="toggle-btn" (click)="toggleSidebar()">
-            <span class="toggle-icon">{{ sidebarCollapsed ? '>' : '<' }}</span>
+          <button class="toggle-btn" (click)="toggleSidebar()" [attr.aria-label]="isMobile() ? 'Fermer le menu' : 'Réduire le menu'">
+            <span class="toggle-icon">{{ isMobile() ? '✕' : (compact() ? '>' : '<') }}</span>
           </button>
         </div>
 
         <nav class="sidebar-nav">
           <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">D</span>
-            @if (!sidebarCollapsed) {
+            @if (!compact()) {
               <span class="nav-text">Dashboard</span>
             }
           </a>
 
           <a routerLink="/fournisseurs" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">F</span>
-            @if (!sidebarCollapsed) {
+            @if (!compact()) {
               <span class="nav-text">Fournisseurs</span>
             }
           </a>
 
           <a routerLink="/DAs-non-soldes" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">DA</span>
-            @if (!sidebarCollapsed) {
+            @if (!compact()) {
               <span class="nav-text">DAs non soldes</span>
             }
           </a>
 
           <a routerLink="/rfq" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">R</span>
-            @if (!sidebarCollapsed) {
+            @if (!compact()) {
               <span class="nav-text">Demandes (RFQ)</span>
             }
           </a>
 
           <a routerLink="/reponses" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">O</span>
-            @if (!sidebarCollapsed) {
+            @if (!compact()) {
               <span class="nav-text">Offres</span>
             }
           </a>
 
           <a routerLink="/comparaison" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">C</span>
-            @if (!sidebarCollapsed) {
+            @if (!compact()) {
               <span class="nav-text">Comparaison</span>
             }
           </a>
 
           <a routerLink="/pre-bon-commande" routerLinkActive="active" class="nav-item highlight">
             <span class="nav-icon">P</span>
-            @if (!sidebarCollapsed) {
+            @if (!compact()) {
               <span class="nav-text">Pre-BC</span>
             }
           </a>
 
           <!-- <a routerLink="/decision" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">V</span>
-            @if (!sidebarCollapsed) {
+            @if (!compact()) {
               <span class="nav-text">Decisions</span>
             }
           </a> -->
 
           <a routerLink="/bon-commande" routerLinkActive="active" class="nav-item">
             <span class="nav-icon">B</span>
-            @if (!sidebarCollapsed) {
+            @if (!compact()) {
               <span class="nav-text">Bons Commande</span>
             }
           </a>
 
           <a routerLink="/annulation-bc" routerLinkActive="active" class="nav-item annulation-item">
             <span class="nav-icon">X</span>
-            @if (!sidebarCollapsed) {
+            @if (!compact()) {
               <span class="nav-text">Annulation BC</span>
             }
           </a>
 
           <a routerLink="/analyse" routerLinkActive="active" class="nav-item analyse-item">
             <span class="nav-icon">A</span>
-            @if (!sidebarCollapsed) {
+            @if (!compact()) {
               <span class="nav-text">Analyse Blocages</span>
             }
           </a>
@@ -105,25 +111,25 @@ import { AuthService } from '../core/services/auth.service';
             <div class="nav-divider"></div>
             <a routerLink="/admin/users" routerLinkActive="active" class="nav-item admin-item">
               <span class="nav-icon">U</span>
-              @if (!sidebarCollapsed) {
+              @if (!compact()) {
                 <span class="nav-text">Utilisateurs</span>
               }
             </a>
             <a routerLink="/admin/cotations" routerLinkActive="active" class="nav-item admin-item">
               <span class="nav-icon">G</span>
-              @if (!sidebarCollapsed) {
+              @if (!compact()) {
                 <span class="nav-text">Gestion Cotations</span>
               }
             </a>
             <a routerLink="/admin/sync-x3" routerLinkActive="active" class="nav-item admin-item">
               <span class="nav-icon">X3</span>
-              @if (!sidebarCollapsed) {
+              @if (!compact()) {
                 <span class="nav-text">Sync Sage X3</span>
               }
             </a>
             <a routerLink="/admin/auto-bc-analyse" routerLinkActive="active" class="nav-item admin-item">
               <span class="nav-icon">AB</span>
-              @if (!sidebarCollapsed) {
+              @if (!compact()) {
                 <span class="nav-text">Analyse Auto BC</span>
               }
             </a>
@@ -131,7 +137,7 @@ import { AuthService } from '../core/services/auth.service';
         </nav>
 
         <div class="sidebar-footer">
-          @if (!sidebarCollapsed) {
+          @if (!compact()) {
             <div class="user-info">
               <div class="user-avatar">{{ userInitials }}</div>
               <div class="user-details">
@@ -142,7 +148,7 @@ import { AuthService } from '../core/services/auth.service';
           }
           <button class="logout-btn" (click)="logout()">
             <span class="logout-icon">X</span>
-            @if (!sidebarCollapsed) {
+            @if (!compact()) {
               <span>Déconnexion</span>
             }
           </button>
@@ -153,6 +159,9 @@ import { AuthService } from '../core/services/auth.service';
       <main class="main-content">
         <header class="top-header">
           <div class="header-left">
+            <button class="burger-btn" (click)="openDrawer()" aria-label="Ouvrir le menu">
+              <span></span><span></span><span></span>
+            </button>
             <h2 class="page-title">{{ pageTitle }}</h2>
           </div>
           <div class="header-right">
@@ -184,8 +193,12 @@ import { AuthService } from '../core/services/auth.service';
       flex-direction: column;
       transition: width 0.3s ease;
       position: fixed;
+      top: 0;
+      left: 0;
       height: 100vh;
+      height: 100dvh;
       z-index: 100;
+      overflow-y: auto;
     }
 
     .sidebar.collapsed {
@@ -410,6 +423,7 @@ import { AuthService } from '../core/services/auth.service';
     /* Main Content */
     .main-content {
       flex: 1;
+      min-width: 0; /* empêche un tableau large d'élargir toute la page */
       margin-left: 260px;
       transition: margin-left 0.3s ease;
     }
@@ -449,16 +463,151 @@ import { AuthService } from '../core/services/auth.service';
     .content-wrapper {
       padding: 24px;
     }
+
+    /* Bouton burger + fond sombre : cachés sur desktop */
+    .burger-btn { display: none; }
+    .header-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .page-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .backdrop { display: none; }
+
+    /* ===== Tablette ===== */
+    @media (max-width: 1024px) {
+      .content-wrapper { padding: 16px; }
+      .top-header { padding: 14px 16px; }
+    }
+
+    /* ===== Mobile : le menu devient un tiroir (drawer) ===== */
+    @media (max-width: 768px) {
+      .sidebar,
+      .sidebar.collapsed {
+        width: min(82vw, 290px);
+        transform: translateX(-100%);
+        transition: transform 0.28s ease;
+        box-shadow: none;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      .sidebar.mobile-open {
+        transform: translateX(0);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.35);
+      }
+
+      .backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.5);
+        z-index: 90;
+        animation: fadeIn 0.2s ease;
+      }
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+      /* le contenu prend toute la largeur */
+      .main-content,
+      .sidebar.collapsed + .main-content,
+      .sidebar.collapsed ~ .main-content {
+        margin-left: 0;
+      }
+
+      .top-header {
+        padding: 10px 12px;
+        padding-top: calc(10px + env(safe-area-inset-top, 0px));
+      }
+      .page-title { font-size: 17px; }
+      .header-user { display: none; }
+
+      .burger-btn {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 5px;
+        width: 44px;
+        height: 44px;
+        margin-left: -6px;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      .burger-btn span {
+        display: block;
+        width: 22px;
+        height: 2px;
+        margin: 0 auto;
+        background: #1f2937;
+        border-radius: 2px;
+      }
+      .burger-btn:active { background: #f3f4f6; }
+
+      /* zones tactiles confortables dans le menu */
+      .toggle-btn { width: 40px; height: 40px; font-size: 16px; }
+      .nav-item { padding: 14px 16px; }
+      .logout-btn { padding: 14px; }
+
+      .content-wrapper {
+        padding: 12px;
+        padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      }
+    }
   `]
 })
-export class MainLayoutComponent {
-  sidebarCollapsed = false;
+export class MainLayoutComponent implements OnInit {
+  private readonly MOBILE_MAX = 768;
+  private readonly TABLET_MAX = 1024;
+
+  /** Menu réduit (desktop / tablette uniquement) */
+  sidebarCollapsed = signal(false);
+  /** true quand l'écran est un téléphone */
+  isMobile = signal(false);
+  /** Tiroir de navigation ouvert (mobile uniquement) */
+  drawerOpen = signal(false);
+  /** Sur mobile le menu n'est jamais « réduit » : on affiche toujours les libellés */
+  compact = computed(() => this.sidebarCollapsed() && !this.isMobile());
+
   pageTitle = 'Dashboard';
 
   constructor(
     public authService: AuthService,
     private router: Router
-  ) {}
+  ) {
+    // Ferme le tiroir après chaque navigation
+    this.router.events
+      .pipe(filter((e) => e instanceof NavigationEnd))
+      .subscribe(() => this.closeDrawer());
+  }
+
+  ngOnInit(): void {
+    this.applyBreakpoint(true);
+  }
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.applyBreakpoint(false);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closeDrawer();
+  }
+
+  private applyBreakpoint(initial: boolean): void {
+    const w = window.innerWidth;
+    const mobile = w <= this.MOBILE_MAX;
+    const wasMobile = this.isMobile();
+    this.isMobile.set(mobile);
+
+    if (!mobile) {
+      this.drawerOpen.set(false);
+    }
+    // Tablette : on réduit le menu automatiquement au chargement
+    if (initial && !mobile && w <= this.TABLET_MAX) {
+      this.sidebarCollapsed.set(true);
+    }
+    // Retour desktop depuis mobile : état propre
+    if (wasMobile && !mobile) {
+      this.drawerOpen.set(false);
+    }
+  }
 
   get userInitials(): string {
     const user = this.authService.currentUser();
@@ -468,11 +617,25 @@ export class MainLayoutComponent {
     return (prenom.charAt(0) + nom.charAt(0)).toUpperCase() || user.username.substring(0, 2).toUpperCase();
   }
 
+  /** Bouton « < » du menu : réduit/agrandit sur desktop, ferme le tiroir sur mobile */
   toggleSidebar(): void {
-    this.sidebarCollapsed = !this.sidebarCollapsed;
+    if (this.isMobile()) {
+      this.closeDrawer();
+    } else {
+      this.sidebarCollapsed.update((v) => !v);
+    }
+  }
+
+  openDrawer(): void {
+    this.drawerOpen.set(true);
+  }
+
+  closeDrawer(): void {
+    this.drawerOpen.set(false);
   }
 
   logout(): void {
+    this.closeDrawer();
     this.authService.logout();
   }
 }

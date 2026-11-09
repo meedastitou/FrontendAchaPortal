@@ -101,7 +101,7 @@ import { ReponseComplete, ReponseAcheteurComplete } from '../../core/models';
           } @else if (reponses().length === 0) {
             <div class="empty">Aucune offre trouvee</div>
           } @else {
-            <table class="data-table">
+            <div class="table-scroll"><table class="data-table">
               <thead>
                 <tr>
                   <th>N RFQ</th>
@@ -139,7 +139,7 @@ import { ReponseComplete, ReponseAcheteurComplete } from '../../core/models';
                   </tr>
                 }
               </tbody>
-            </table>
+            </table></div>
 
             <!-- Pagination -->
             <div class="pagination">
@@ -168,7 +168,7 @@ import { ReponseComplete, ReponseAcheteurComplete } from '../../core/models';
               </a> -->
             </div>
           } @else {
-            <table class="data-table">
+            <div class="table-scroll"><table class="data-table">
               <thead>
                 <tr>
                   <th>N RFQ</th>
@@ -209,7 +209,7 @@ import { ReponseComplete, ReponseAcheteurComplete } from '../../core/models';
                   </tr>
                 }
               </tbody>
-            </table>
+            </table></div>
 
             <!-- Pagination Acheteur -->
             <div class="pagination">

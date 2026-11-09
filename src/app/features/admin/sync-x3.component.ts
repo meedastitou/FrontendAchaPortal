@@ -120,7 +120,7 @@ type TabType = 'sync' | 'non-signees' | 'prix-superieur' | 'marque-diff' | 'da-x
           <div class="table-card">
             <h3>Historique des synchronisations</h3>
             @if (logs().length > 0) {
-              <table class="data-table">
+              <div class="table-scroll"><table class="data-table">
                 <thead>
                   <tr>
                     <th>Date</th>
@@ -145,7 +145,7 @@ type TabType = 'sync' | 'non-signees' | 'prix-superieur' | 'marque-diff' | 'da-x
                     </tr>
                   }
                 </tbody>
-              </table>
+              </table></div>
             } @else {
               <p class="empty">Aucun historique</p>
             }
@@ -163,7 +163,7 @@ type TabType = 'sync' | 'non-signees' | 'prix-superieur' | 'marque-diff' | 'da-x
             } @else if (reponsesNonSignees().length === 0) {
               <div class="empty">Aucune reponse sur DA non signee</div>
             } @else {
-              <table class="data-table">
+              <div class="table-scroll"><table class="data-table">
                 <thead>
                   <tr>
                     <th>DA</th>
@@ -188,7 +188,7 @@ type TabType = 'sync' | 'non-signees' | 'prix-superieur' | 'marque-diff' | 'da-x
                     </tr>
                   }
                 </tbody>
-              </table>
+              </table></div>
               <div class="pagination">
                 <span>{{ totalNonSignees }} resultats</span>
               </div>
@@ -210,7 +210,7 @@ type TabType = 'sync' | 'non-signees' | 'prix-superieur' | 'marque-diff' | 'da-x
               <div class="summary-box warning">
                 Total ecart: <strong>{{ montantEcartTotal | number:'1.2-2' }} DH</strong>
               </div>
-              <table class="data-table">
+              <div class="table-scroll"><table class="data-table">
                 <thead>
                   <tr>
                     <th>Article</th>
@@ -236,7 +236,7 @@ type TabType = 'sync' | 'non-signees' | 'prix-superieur' | 'marque-diff' | 'da-x
                     </tr>
                   }
                 </tbody>
-              </table>
+              </table></div>
             }
           </div>
         }
@@ -252,7 +252,7 @@ type TabType = 'sync' | 'non-signees' | 'prix-superieur' | 'marque-diff' | 'da-x
             } @else if (offresMarqueDiff().length === 0) {
               <div class="empty">Aucune offre avec marque differente</div>
             } @else {
-              <table class="data-table">
+              <div class="table-scroll"><table class="data-table">
                 <thead>
                   <tr>
                     <th>Article</th>
@@ -283,7 +283,7 @@ type TabType = 'sync' | 'non-signees' | 'prix-superieur' | 'marque-diff' | 'da-x
                     </tr>
                   }
                 </tbody>
-              </table>
+              </table></div>
             }
           </div>
         }
@@ -299,7 +299,7 @@ type TabType = 'sync' | 'non-signees' | 'prix-superieur' | 'marque-diff' | 'da-x
             } @else if (daNonSoldeesX3().length === 0) {
               <div class="empty">Aucune DA non soldee trouvee</div>
             } @else {
-              <table class="data-table">
+              <div class="table-scroll"><table class="data-table">
                 <thead>
                   <tr>
                     <th>DA</th>
@@ -338,7 +338,7 @@ type TabType = 'sync' | 'non-signees' | 'prix-superieur' | 'marque-diff' | 'da-x
                     </tr>
                   }
                 </tbody>
-              </table>
+              </table></div>
               <div class="pagination">
                 <span>{{ totalDaNonSoldeesX3 }} resultats</span>
               </div>

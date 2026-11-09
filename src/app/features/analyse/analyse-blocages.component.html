@@ -239,7 +239,7 @@
       } @else {
         <!-- Liste Non Signés -->
         @if (selectedTab() === 'non-signes') {
-          <table class="data-table">
+          <div class="table-scroll"><table class="data-table">
             <thead>
               <tr>
                 <th>DA</th>
@@ -272,12 +272,12 @@
                 </tr>
               }
             </tbody>
-          </table>
+          </table></div>
         }
 
         <!-- Liste Prix > Tarif -->
         @if (selectedTab() === 'prix-superieur') {
-          <table class="data-table">
+          <div class="table-scroll"><table class="data-table">
             <thead>
               <tr>
                 <th>DA</th>
@@ -312,12 +312,12 @@
                 </tr>
               }
             </tbody>
-          </table>
+          </table></div>
         }
 
         <!-- Liste Marque Différente -->
         @if (selectedTab() === 'marque-differente') {
-          <table class="data-table">
+          <div class="table-scroll"><table class="data-table">
             <thead>
               <tr>
                 <th>DA</th>
@@ -354,12 +354,12 @@
                 </tr>
               }
             </tbody>
-          </table>
+          </table></div>
         }
 
         <!-- Liste Marque Inexistante -->
         @if (selectedTab() === 'marque-inexistante') {
-          <table class="data-table">
+          <div class="table-scroll"><table class="data-table">
             <thead>
               <tr>
                 <th>DA</th>
@@ -390,12 +390,12 @@
                 </tr>
               }
             </tbody>
-          </table>
+          </table></div>
         }
 
         <!-- Liste Sans Réponse -->
         @if (selectedTab() === 'sans-reponse') {
-          <table class="data-table">
+          <div class="table-scroll"><table class="data-table">
             <thead>
               <tr>
                 <th>DA</th>
@@ -430,7 +430,7 @@
                 </tr>
               }
             </tbody>
-          </table>
+          </table></div>
         }
 
         <!-- Liste DA Sans RFQ -->
@@ -441,7 +441,7 @@
               Chargement...
             </div>
           } @else {
-            <table class="data-table">
+            <div class="table-scroll"><table class="data-table">
               <thead>
                 <tr>
                   <th>N DA</th>
@@ -474,7 +474,7 @@
                   </tr>
                 }
               </tbody>
-            </table>
+            </table></div>
           }
         }
 
@@ -486,7 +486,7 @@
               Chargement des RFQ...
             </div>
           } @else {
-            <table class="data-table">
+            <div class="table-scroll"><table class="data-table">
               <thead>
                 <tr>
                   <th>N RFQ</th>
@@ -549,7 +549,7 @@
                   </tr>
                 }
               </tbody>
-            </table>
+            </table></div>
           }
         }
 
@@ -561,7 +561,7 @@
               Chargement des RFQ...
             </div>
           } @else {
-            <table class="data-table">
+            <div class="table-scroll"><table class="data-table">
               <thead>
                 <tr>
                   <th>N RFQ</th>
@@ -614,7 +614,7 @@
                   </tr>
                 }
               </tbody>
-            </table>
+            </table></div>
           }
         }
 

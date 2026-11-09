@@ -302,7 +302,7 @@ interface FournisseurCache {
 
             <div class="recap-section">
               <h3>Articles ({{ lignesSelectionnees().length }})</h3>
-              <table class="recap-table">
+              <div class="table-scroll"><table class="recap-table">
                 <thead>
                   <tr>
                     <th>Article</th>
@@ -328,7 +328,7 @@ interface FournisseurCache {
                     </tr>
                   }
                 </tbody>
-              </table>
+              </table></div>
             </div>
 
             @if (error()) {

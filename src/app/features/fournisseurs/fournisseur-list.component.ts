@@ -63,7 +63,7 @@ import { Fournisseur, FournisseurCreate, FournisseurUpdate, StatutFournisseur } 
         } @else if (fournisseurs().length === 0) {
           <div class="empty">Aucun fournisseur trouve</div>
         } @else {
-          <table class="data-table">
+          <div class="table-scroll"><table class="data-table">
             <thead>
               <tr>
                 <th>Code</th>
@@ -126,7 +126,7 @@ import { Fournisseur, FournisseurCreate, FournisseurUpdate, StatutFournisseur } 
                 </tr>
               }
             </tbody>
-          </table>
+          </table></div>
 
           <!-- Pagination -->
           <div class="pagination">
