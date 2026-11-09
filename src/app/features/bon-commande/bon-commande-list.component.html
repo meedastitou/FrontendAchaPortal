@@ -138,7 +138,7 @@
         </div>
 
         <div class="bc-table-container">
-          <table class="bc-table">
+          <div class="table-scroll"><table class="bc-table">
             <thead>
               <tr>
                 <th>N° BC</th>
@@ -184,7 +184,7 @@
                 </tr>
               }
             </tbody>
-          </table>
+          </table></div>
         </div>
 
         <!-- Pagination -->
@@ -244,7 +244,7 @@
 
         <!-- Table des BC X3 -->
         <div class="bc-table-container">
-          <table class="bc-table">
+          <div class="table-scroll"><table class="bc-table">
             <thead>
               <tr>
                 <th>N Commande</th>
@@ -296,7 +296,7 @@
                         @if (bc.lignes.length === 0) {
                           <p class="no-lignes">Aucune ligne trouvee</p>
                         } @else {
-                          <table class="lignes-table">
+                          <div class="table-scroll"><table class="lignes-table">
                             <thead>
                               <tr>
                                 <th>DA</th>
@@ -317,7 +317,7 @@
                                 </tr>
                               }
                             </tbody>
-                          </table>
+                          </table></div>
                         }
                       </div>
                     </td>
@@ -325,7 +325,7 @@
                 }
               }
             </tbody>
-          </table>
+          </table></div>
         </div>
       }
     </div>

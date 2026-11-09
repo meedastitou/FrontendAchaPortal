@@ -99,7 +99,7 @@ import {
           </div>
         } @else {
           <div class="table-container">
-            <table class="data-table">
+            <div class="table-scroll"><table class="data-table">
               <thead>
                 <tr>
                   <th>ID</th>
@@ -126,7 +126,7 @@ import {
                   </tr>
                 }
               </tbody>
-            </table>
+            </table></div>
           </div>
 
           <!-- Pagination -->

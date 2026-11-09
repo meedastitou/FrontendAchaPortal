@@ -101,6 +101,7 @@
   grid-template-columns: 1fr 320px;
   gap: 24px;
   align-items: start;
+  min-width: 0;
 }
 
 .form-section {
@@ -765,6 +766,7 @@
 @media (max-width: 1024px) {
   .main-content {
     grid-template-columns: 1fr;
+    min-width: 0;
   }
 
   .summary-panel .sticky {

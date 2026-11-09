@@ -76,7 +76,7 @@ import { ComparaisonResponse } from '../../core/models';
 
           <!-- Tableau comparatif -->
           <div class="table-card">
-            <table class="data-table">
+            <div class="table-scroll"><table class="data-table">
               <thead>
                 <tr>
                   <th>Rang</th>
@@ -118,7 +118,7 @@ import { ComparaisonResponse } from '../../core/models';
                   </tr>
                 }
               </tbody>
-            </table>
+            </table></div>
           </div>
         } @else {
           <div class="no-offers">

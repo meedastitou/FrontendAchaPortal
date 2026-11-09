@@ -100,6 +100,7 @@
   display: grid;
   grid-template-columns: 1fr 360px;
   gap: 1.5rem;
+  min-width: 0;
 
   @media (max-width: 1200px) {
     grid-template-columns: 1fr;

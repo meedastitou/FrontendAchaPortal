@@ -47,3 +47,240 @@ input, select, textarea {
 ::-webkit-scrollbar-thumb:hover {
   background: #a1a1a1;
 }
+
+
+/* =====================================================================
+   RESPONSIVE (tablette & mobile)
+   Couche globale : s'applique à toutes les pages sans toucher chaque
+   composant. Breakpoints : 1024px (tablette), 768px (mobile), 480px (petit mobile)
+   ===================================================================== */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+img, svg, video, canvas {
+  max-width: 100%;
+}
+
+/* ---------- Tablette et moins ---------- */
+@media (max-width: 1024px) {
+  /* Tous les tableaux défilent horizontalement dans leur conteneur */
+  .table-scroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 768px) {
+  html, body {
+    font-size: 14px;
+    overflow-x: hidden;
+  }
+
+  /* Les pages n'ont plus leur propre marge : le layout en fournit une */
+  .page {
+    padding: 0 !important;
+  }
+
+  /* -- Tableaux : largeur mini pour que le scroll horizontal se déclenche -- */
+  .table-scroll > table {
+    min-width: 640px;
+  }
+  .table-scroll > table th,
+  .table-scroll > table td {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  /* -- Champs de formulaire : 16px évite le zoom automatique sur iOS -- */
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea {
+    font-size: 16px !important;
+    max-width: 100%;
+  }
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select {
+    min-height: 40px;
+  }
+
+  /* -- Boutons : zone tactile confortable -- */
+  .btn, .btn-primary, .btn-secondary, .btn-outline, .btn-success, .btn-danger,
+  .btn-create, .btn-add, .btn-back, .btn-generer {
+    min-height: 40px;
+  }
+  .btn-icon, .btn-close {
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  /* -- En-têtes de page : le titre au-dessus, les actions en dessous -- */
+  .page-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px;
+    margin-bottom: 16px !important;
+  }
+  .page-header h1 {
+    font-size: 20px !important;
+  }
+  .page-header .header-actions,
+  .header-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .page-header .header-actions > *,
+  .page-header > .btn-primary,
+  .page-header > .btn-create,
+  .page-header > .btn-add {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  .card-header,
+  .section-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* -- Filtres : un champ par ligne -- */
+  .filters-card {
+    padding: 14px !important;
+  }
+  .filters {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  .filters .filter-group,
+  .filter-group {
+    width: 100%;
+    min-width: 0 !important;
+  }
+  .filters .filter-group input,
+  .filters .filter-group select,
+  .filters input,
+  .filters select,
+  .search-input {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* -- Onglets : défilement horizontal au doigt -- */
+  .tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tabs .tab {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  /* -- Pagination -- */
+  .pagination {
+    flex-direction: column !important;
+    gap: 10px;
+    align-items: center !important;
+  }
+  .pagination-buttons {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* -- Grilles de statistiques / KPI : 2 colonnes -- */
+  .stats-row,
+  .stats-grid,
+  .summary-stats,
+  .perf-stats,
+  .da-stats,
+  .alertes-grid,
+  .blocage-cards,
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  /* -- Grilles de contenu / détail : 1 colonne -- */
+  .content-grid,
+  .detail-grid,
+  .dashboard-grid,
+  .analyse-grid,
+  .info-grid,
+  .form-grid,
+  .form-row,
+  .fields-grid,
+  .familles-grid,
+  .rfq-cards,
+  .rfq-cards-3,
+  .reponse-info,
+  .fournisseurs-grid,
+  .preview-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  /* -- Panneaux "collants" : inutiles sur mobile, on les remet dans le flux -- */
+  .recap-section,
+  .summary-card.sticky,
+  .summary-panel .sticky {
+    position: static !important;
+  }
+
+  /* -- Fenêtres modales : plein écran utile -- */
+  .modal-overlay {
+    padding: 8px !important;
+    align-items: center;
+  }
+  .modal,
+  .modal-content,
+  .modal-lg,
+  .modal-large,
+  .modal-das,
+  .modal-affaire {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: calc(100vh - 16px) !important;
+    max-height: calc(100dvh - 16px) !important;
+    overflow-y: auto;
+    border-radius: 12px !important;
+  }
+  .modal-header,
+  .modal-header-edit {
+    padding: 14px 16px !important;
+  }
+  .modal-body,
+  .modal-body-edit {
+    padding: 14px 16px !important;
+  }
+  .modal-footer,
+  .modal-footer-edit {
+    padding: 12px 16px !important;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .modal-footer .btn,
+  .modal-footer button,
+  .modal-footer-edit button {
+    flex: 1 1 auto;
+  }
+}
+
+/* ---------- Petit mobile ---------- */
+@media (max-width: 480px) {
+  .stats-row,
+  .stats-grid,
+  .summary-stats,
+  .perf-stats,
+  .da-stats,
+  .alertes-grid,
+  .blocage-cards,
+  .summary-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}

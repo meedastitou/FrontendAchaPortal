@@ -71,7 +71,7 @@ import { ReponseAcheteurComplete } from '../../core/models';
           <h2>Articles ({{ reponse()!.lignes.length }})</h2>
 
           <div class="table-responsive">
-            <table class="data-table">
+            <div class="table-scroll"><table class="data-table">
               <thead>
                 <tr>
                   <th>Article</th>
@@ -121,7 +121,7 @@ import { ReponseAcheteurComplete } from '../../core/models';
                   </tr>
                 }
               </tbody>
-            </table>
+            </table></div>
           </div>
         </div>
 

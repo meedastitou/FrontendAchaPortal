@@ -90,7 +90,7 @@ import {
         } @else if (lignes().length === 0) {
           <div class="empty">Aucune ligne de cotation trouvee</div>
         } @else {
-          <table class="data-table">
+          <div class="table-scroll"><table class="data-table">
             <thead>
               <tr>
                 <th>DA</th>
@@ -156,7 +156,7 @@ import {
                 </tr>
               }
             </tbody>
-          </table>
+          </table></div>
 
           <!-- Pagination -->
           <div class="pagination">
