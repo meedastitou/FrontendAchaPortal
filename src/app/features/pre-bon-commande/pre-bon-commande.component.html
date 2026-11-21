@@ -92,18 +92,6 @@
               >
                 Voir detail
               </button>
-              <button
-                class="btn btn-primary"
-                (click)="genererBC(fournisseur)"
-                [disabled]="countSelectedArticles(fournisseur.code_fournisseur) === 0 || generationLoading()"
-              >
-                @if (generationLoading() === fournisseur.code_fournisseur) {
-                  <span class="spinner-small"></span>
-                  Generation...
-                } @else {
-                  Generer BC ({{ countSelectedArticles(fournisseur.code_fournisseur) }})
-                }
-              </button>
             </div>
           </div>
         }
@@ -172,9 +160,9 @@
           <!-- Liste X3 : 1re commande (rien trouve) OU changement demande -->
           @if (!s.trouvee || changerAffaire()) {
             <div class="select-affaire">
-              <label>
+            <label style="font-size: 16px; font-weight: bold;">
                 {{ s.trouvee ? "Choisir une autre affaire" : "Première commande : sélectionner l'affaire" }}
-              </label>
+            </label>
 
               <div class="affaire-dropdown" (click)="$event.stopPropagation()">
                 <button type="button" class="affaire-trigger"
@@ -304,7 +292,19 @@
             </div>
           }
         </div>
-
+        @if (erreursBC().length) {
+          <div class="alert-erreurs">
+            <div class="alert-erreurs-header">
+              <strong>Génération impossible</strong>
+              <button type="button" class="btn-close-alert" (click)="erreursBC.set([])">&times;</button>
+            </div>
+            <ul>
+              @for (e of erreursBC(); track e) {
+                <li>{{ e }}</li>
+              }
+            </ul>
+          </div>
+        }
         <!-- Actions -->
         <div class="modal-footer">
           <button class="btn btn-secondary" (click)="closeDetail()">Fermer</button>

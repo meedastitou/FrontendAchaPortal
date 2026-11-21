@@ -208,6 +208,7 @@ export class PreBonCommandeComponent implements OnInit {
     this.affaireValidee.set(false);                 // AJOUT
     this.suggestion.set(null);                      // AJOUT
     this.suggestionSeq++; 
+    this.erreursBC.set([]);
   }
 
   // Toggle selection d'un article
@@ -262,14 +263,14 @@ export class PreBonCommandeComponent implements OnInit {
     this.selectedArticles.set(map);
     this.rafraichirSuggestion();
   }
-
+  erreursBC = signal<string[]>([]);
   // Generer le BC pour un fournisseur
   genererBC(fournisseur: FournisseurPreBC): void {
     const selectedIds = this.selectedArticles().get(fournisseur.code_fournisseur);
     if (!selectedIds || selectedIds.size === 0) {
       return;
     }
-
+    this.erreursBC.set([]);
     this.generationLoading.set(fournisseur.code_fournisseur);
 
     const request: GenererBCFromPreBCRequest = {
@@ -289,11 +290,26 @@ export class PreBonCommandeComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.error('Error generating BC:', err);
-        this.generationLoading.set(null);
-        alert('Erreur lors de la generation du bon de commande');
-      }
-    });
+            console.error('Error generating BC:', err);
+            this.generationLoading.set(null);
+
+            const detail = err?.error?.detail;
+            let lignes: string[];
+
+            if (typeof detail === 'string') {
+              lignes = detail.split('\n').map(l => l.replace(/^- /, '').trim()).filter(Boolean);
+            } else if (detail?.erreurs) {
+              lignes = detail.erreurs;
+            } else if (Array.isArray(detail)) {
+              lignes = detail.map((d: any) => d.msg);
+            } else {
+              lignes = ['Erreur lors de la génération du bon de commande'];
+            }
+
+            // Retire la ligne d'en-tête "Vérifications échouées :" car le titre est déjà dans l'alerte
+            this.erreursBC.set(lignes.filter(l => !l.startsWith('Vérifications échouées')));
+          }
+        });
   }
 
   // Deselectionner un article (supprimer de la base)
